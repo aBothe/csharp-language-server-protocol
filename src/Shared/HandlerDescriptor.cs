@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,15 +6,14 @@ using MediatR;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
 
-namespace OmniSharp.Extensions.LanguageServer.Server
+namespace OmniSharp.Extensions.LanguageProtocolShared
 {
-    class HandlerDescriptor : ILspHandlerDescriptor, IDisposable, IEquatable<HandlerDescriptor>
+    class LspHandlerDescriptor : ILspHandlerDescriptor, IDisposable, IEquatable<LspHandlerDescriptor>
     {
         private readonly Action _disposeAction;
 
-        public HandlerDescriptor(
+        public LspHandlerDescriptor(
             string method,
             string key,
             IJsonRpcHandler handler,
@@ -34,7 +33,6 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             Handler = handler;
             HandlerType = handlerType;
             Params = @params;
-            Response = Response;
             RegistrationType = registrationType;
             RegistrationOptions = registrationOptions;
             AllowsDynamicRegistration = allowsDynamicRegistration;
@@ -56,13 +54,17 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             );
 
             IsDelegatingHandler = @params?.IsGenericType == true &&
-                (
-                    typeof(DelegatingRequest<>).IsAssignableFrom(@params.GetGenericTypeDefinition()) ||
-                    typeof(DelegatingNotification<>).IsAssignableFrom(@params.GetGenericTypeDefinition())
-                );
-            if (handler is IOnStarted started)
+                                  (
+                                      typeof(DelegatingRequest<>).IsAssignableFrom(@params.GetGenericTypeDefinition()) ||
+                                      typeof(DelegatingNotification<>).IsAssignableFrom(@params.GetGenericTypeDefinition())
+                                  );
+            if (handler is IOnServerStarted serverStarted)
             {
-                StartedDelegate = started.OnStarted;
+                OnServerStartedDelegate = serverStarted.OnStarted;
+            }
+            if (handler is IOnClientStarted clientStarted)
+            {
+                OnClientStartedDelegate = clientStarted.OnStarted;
             }
         }
 
@@ -77,7 +79,8 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
         public bool HasCapability => CapabilityType != null;
         public Type CapabilityType { get; }
-        public StartedDelegate StartedDelegate { get; }
+        public OnServerStartedDelegate OnServerStartedDelegate { get; }
+        public OnClientStartedDelegate OnClientStartedDelegate { get; }
 
         public string Method { get; }
         public string Key { get; }
@@ -85,7 +88,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public Type Response { get; }
         public bool IsDelegatingHandler { get; }
 
-        public bool IsDynamicCapability => typeof(DynamicCapability).GetTypeInfo().IsAssignableFrom(CapabilityType);
+        public bool IsDynamicCapability => typeof(IDynamicCapability).GetTypeInfo().IsAssignableFrom(CapabilityType);
         public Type CanBeResolvedHandlerType { get; }
         public bool HasReturnType { get; }
 
@@ -98,10 +101,10 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as HandlerDescriptor);
+            return Equals(obj as LspHandlerDescriptor);
         }
 
-        public bool Equals(HandlerDescriptor other)
+        public bool Equals(LspHandlerDescriptor other)
         {
             return other != null &&
                    EqualityComparer<Type>.Default.Equals(HandlerType, other.HandlerType) &&
@@ -118,12 +121,12 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             return hashCode;
         }
 
-        public static bool operator ==(HandlerDescriptor descriptor1, HandlerDescriptor descriptor2)
+        public static bool operator ==(LspHandlerDescriptor descriptor1, LspHandlerDescriptor descriptor2)
         {
-            return EqualityComparer<HandlerDescriptor>.Default.Equals(descriptor1, descriptor2);
+            return EqualityComparer<LspHandlerDescriptor>.Default.Equals(descriptor1, descriptor2);
         }
 
-        public static bool operator !=(HandlerDescriptor descriptor1, HandlerDescriptor descriptor2)
+        public static bool operator !=(LspHandlerDescriptor descriptor1, LspHandlerDescriptor descriptor2)
         {
             return !(descriptor1 == descriptor2);
         }

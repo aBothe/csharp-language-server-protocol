@@ -17,7 +17,7 @@ using OmniSharp.Extensions.LanguageServer;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using HandlerCollection = OmniSharp.Extensions.LanguageServer.Server.HandlerCollection;
+using HandlerCollection = OmniSharp.Extensions.LanguageServer.Shared.HandlerCollection;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
@@ -27,6 +27,7 @@ using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.I
 using Serializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Serializer;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using System.Collections.Generic;
+using OmniSharp.Extensions.LanguageProtocolShared;
 
 namespace Lsp.Tests
 {

@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    public interface ILanguageServer : OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer, OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServerRegistry, IDisposable
+    public interface ILanguageServer : OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer
     {
         InitializeParams ClientSettings { get; }
         InitializeResult ServerSettings { get; }

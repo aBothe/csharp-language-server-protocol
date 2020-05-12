@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.JsonRpc.Server;
+using OmniSharp.Extensions.LanguageProtocolShared;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server.Messages;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    public class LspReceiver : Receiver, ILspReceiver
+    public class LspServerReceiver : Receiver, ILspServerReceiver
     {
         private bool _initialized;
 
@@ -21,7 +23,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             var (results, hasResponse) = base.GetRequests(container);
             foreach (var item in results)
             {
-                if (item.IsRequest && item.Request.Method == LspHelper.GetMethodName<IInitializeHandler>())
+                if (item.IsRequest && HandlerTypeHelper.IsMethodName(item.Request.Method, typeof(IInitializeHandler)))
                 {
                     newResults.Add(item);
                 }
@@ -35,7 +37,8 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                 }
                 else if (item.IsNotification)
                 {
-                    newResults.Add(item);
+                    // drop notifications
+                    // newResults.Add(item);
                 }
             }
 

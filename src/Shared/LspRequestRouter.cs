@@ -8,10 +8,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.JsonRpc.Server;
-using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
-namespace OmniSharp.Extensions.LanguageServer.Server
+namespace OmniSharp.Extensions.LanguageProtocolShared
 {
     internal class LspRequestRouter : RequestRouterBase<ILspHandlerDescriptor>, IRequestRouter<IHandlerDescriptor>
     {

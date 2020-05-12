@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -26,7 +27,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public ServerInfo ServerInfo { get; set; }
         public ISerializer Serializer { get; set; } = Protocol.Serialization.Serializer.Instance;
         public IRequestProcessIdentifier RequestProcessIdentifier { get; set; } = new RequestProcessIdentifier();
-        public ILspReceiver Receiver { get; set; } = new LspReceiver();
+        public ILspServerReceiver Receiver { get; set; } = new LspServerReceiver();
         public IServiceCollection Services { get; set; } = new ServiceCollection();
         internal List<IJsonRpcHandler> Handlers { get; set; } = new List<IJsonRpcHandler>();
         internal List<ITextDocumentIdentifier> TextDocumentIdentifiers { get; set; } = new List<ITextDocumentIdentifier>();
@@ -42,7 +43,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
         internal readonly List<InitializeDelegate> InitializeDelegates = new List<InitializeDelegate>();
         internal readonly List<InitializedDelegate> InitializedDelegates = new List<InitializedDelegate>();
-        internal readonly List<StartedDelegate> StartedDelegates = new List<StartedDelegate>();
+        internal readonly List<OnServerStartedDelegate> StartedDelegates = new List<OnServerStartedDelegate>();
 
         public IDisposable AddHandler(string method, IJsonRpcHandler handler)
         {

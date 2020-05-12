@@ -1,5 +1,6 @@
 using System;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Server;
 using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
 

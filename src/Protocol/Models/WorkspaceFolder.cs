@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    public class WorkspaceFolder
+    public class WorkspaceFolder : IEquatable<WorkspaceFolder>
     {
         /// <summary>
         /// The associated URI for this workspace folder.
@@ -15,5 +15,26 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
         /// The name of the workspace folder. Defaults to the uri's basename.
         /// </summary>
         public string Name { get; set; }
+
+        public bool Equals(WorkspaceFolder other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Equals(Uri, other.Uri) && Name == other.Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((WorkspaceFolder) obj);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Uri, Name);
+
+        public static bool operator ==(WorkspaceFolder left, WorkspaceFolder right) => Equals(left, right);
+
+        public static bool operator !=(WorkspaceFolder left, WorkspaceFolder right) => !Equals(left, right);
     }
 }

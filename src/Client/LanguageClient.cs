@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Client.Clients;
 using OmniSharp.Extensions.LanguageServer.Client.Dispatcher;
 using OmniSharp.Extensions.LanguageServer.Client.Handlers;
@@ -24,7 +23,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
     /// <remarks>
     ///     Note - at this stage, a <see cref="LanguageClient"/> cannot be reused once <see cref="Shutdown"/> has been called; instead, create a new one.
     /// </remarks>
-    public sealed class LanguageClient
+    public sealed class LanguageClient_old
         : IDisposable
     {
         /// <summary>
@@ -89,10 +88,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public LanguageClient(ILoggerFactory loggerFactory, ServerProcess process)
             : this(loggerFactory)
         {
-            if (process == null)
-                throw new ArgumentNullException(nameof(process));
-
-            _process = process;
+            _process = process ?? throw new ArgumentNullException(nameof(process));
             _process.Exited.Subscribe(x => ServerProcess_Exit());
         }
 
@@ -104,10 +100,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         /// </param>
         LanguageClient(ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-                throw new ArgumentNullException(nameof(loggerFactory));
-
-            LoggerFactory = loggerFactory;
+            LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             Log = LoggerFactory.CreateLogger<LanguageClient>();
             Workspace = new WorkspaceClient(this);
             Window = new WindowClient(this);

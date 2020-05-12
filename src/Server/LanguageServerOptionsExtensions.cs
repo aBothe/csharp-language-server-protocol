@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
@@ -36,9 +37,9 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             return options;
         }
 
-        public static LanguageServerOptions WithReciever(this LanguageServerOptions options, ILspReceiver receiver)
+        public static LanguageServerOptions WithReciever(this LanguageServerOptions options, ILspServerReceiver serverReceiver)
         {
-            options.Receiver = receiver;
+            options.Receiver = serverReceiver;
             return options;
         }
 
@@ -111,7 +112,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             return options;
         }
 
-        public static LanguageServerOptions OnStarted(this LanguageServerOptions options, StartedDelegate @delegate)
+        public static LanguageServerOptions OnStarted(this LanguageServerOptions options, OnServerStartedDelegate @delegate)
         {
             options.StartedDelegates.Add(@delegate);
             return options;

@@ -7,6 +7,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
+using HandlerCollection = OmniSharp.Extensions.LanguageServer.Shared.HandlerCollection;
 
 namespace Lsp.Tests
 {
@@ -19,7 +20,7 @@ namespace Lsp.Tests
             var handler = Substitute.For<IExecuteCommandHandler>();
             handler.GetRegistrationOptions().Returns(new ExecuteCommandRegistrationOptions());
 
-            var handlerCollection = new OmniSharp.Extensions.LanguageServer.Server.HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, new TextDocumentIdentifiers()) { handler };
+            var handlerCollection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, new TextDocumentIdentifiers()) { handler };
             var capabilityProvider = new ClientCapabilityProvider(handlerCollection, true);
 
             Provider = capabilityProvider;

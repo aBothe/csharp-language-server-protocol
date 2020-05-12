@@ -11,15 +11,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using ILanguageServer = OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer;
 
 namespace OmniSharp.Extensions.LanguageServer.Server.Configuration
 {
     class DidChangeConfigurationProvider : BaseWorkspaceConfigurationProvider, IDidChangeConfigurationHandler,
-        IOnStarted, ILanguageServerConfiguration
+        IOnServerStarted, ILanguageServerConfiguration
     {
         private readonly ILanguageServer _server;
         private DidChangeConfigurationCapability _capability;
@@ -56,7 +58,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server.Configuration
 
         public void SetCapability(DidChangeConfigurationCapability capability) => _capability = capability;
 
-        Task IOnStarted.OnStarted(ILanguageServer server, InitializeResult result, CancellationToken cancellationToken) => GetWorkspaceConfiguration();
+        Task IOnServerStarted.OnStarted(Protocol.Server.ILanguageServer server, InitializeResult result, CancellationToken cancellationToken) => GetWorkspaceConfiguration();
 
         private async Task GetWorkspaceConfiguration()
         {

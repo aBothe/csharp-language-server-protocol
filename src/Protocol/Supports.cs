@@ -11,6 +11,11 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             _isSupported = isSupported;
             Value = value;
         }
+        public Supports(T value)
+        {
+            _isSupported = true;
+            Value = value;
+        }
 
         public Supports(bool? isSupported)
         {

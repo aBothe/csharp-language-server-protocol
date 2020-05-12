@@ -4,6 +4,7 @@ using System.Reflection;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
 
@@ -72,7 +73,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server.Matchers
                         descriptor.Method,
                         descriptor.ImplementationType.FullName);
                     if ((descriptor.ImplementationType.FullName == handlerType || descriptor.HandlerType.FullName == handlerType) &&
-                        ((descriptor is HandlerDescriptor handlerDescriptor) && handlerDescriptor.Key == handlerKey))
+                        ((descriptor is LspHandlerDescriptor handlerDescriptor) && handlerDescriptor.Key == handlerKey))
                     {
                         yield return descriptor;
                     }

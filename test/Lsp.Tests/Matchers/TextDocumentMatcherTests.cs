@@ -4,6 +4,7 @@ using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -60,7 +61,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -88,7 +89,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cshtml"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -116,7 +117,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -141,7 +142,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -166,7 +167,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -191,7 +192,7 @@ namespace Lsp.Tests.Matchers
                 TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp");
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();
@@ -221,7 +222,7 @@ namespace Lsp.Tests.Matchers
             // Then
             result.Should().NotBeNullOrEmpty();
             result.Should().Contain(x => x.Method == DocumentNames.CodeLens);
-            result.Should().Contain(x => ((HandlerDescriptor)x).Key == "[**/*.cs]");
+            result.Should().Contain(x => ((LspHandlerDescriptor)x).Key == "[**/*.cs]");
         }
     }
 
@@ -244,7 +245,7 @@ namespace Lsp.Tests.Matchers
             });
             var textDocumentIdentifiers = new TextDocumentIdentifiers();
             AutoSubstitute.Provide(textDocumentIdentifiers);
-            var collection = new HandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler, handler };
+            var collection = new SharedHandlerCollection(SupportedCapabilitiesFixture.AlwaysTrue, textDocumentIdentifiers) { textDocumentSyncHandler, handler };
             AutoSubstitute.Provide<IHandlerCollection>(collection);
             AutoSubstitute.Provide<IEnumerable<ILspHandlerDescriptor>>(collection);
             var handlerMatcher = AutoSubstitute.Resolve<TextDocumentMatcher>();

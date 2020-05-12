@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using OmniSharp.Extensions.JsonRpc;
 
-namespace OmniSharp.Extensions.LanguageServer.Server
+namespace OmniSharp.Extensions.LanguageProtocolShared
 {
     public static class HandlerTypeHelpers
     {
@@ -23,6 +23,15 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             return type?.GetTypeInfo()
                 .ImplementedInterfaces
                 .First(IsValidInterface);
+        }
+
+        public static Type UnwrapGenericType(Type genericType, Type type)
+        {
+            return type?.GetTypeInfo()
+                .ImplementedInterfaces
+                .FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetTypeInfo().GetGenericTypeDefinition() == genericType)
+                ?.GetTypeInfo()
+                ?.GetGenericArguments()[0];
         }
     }
 }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace OmniSharp.Extensions.LanguageServer.Server.Abstractions
+namespace OmniSharp.Extensions.LanguageProtocolShared
 {
     public interface IHandlerMatcher
     {

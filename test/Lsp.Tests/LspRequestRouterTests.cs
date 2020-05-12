@@ -24,10 +24,11 @@ using OmniSharp.Extensions.LanguageServer.Server.Matchers;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using HandlerCollection = OmniSharp.Extensions.LanguageServer.Server.HandlerCollection;
+using HandlerCollection = OmniSharp.Extensions.LanguageServer.Shared.HandlerCollection;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 using Serializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Serializer;
 using System.Reactive.Disposables;
+using OmniSharp.Extensions.LanguageProtocolShared;
 
 namespace Lsp.Tests
 {

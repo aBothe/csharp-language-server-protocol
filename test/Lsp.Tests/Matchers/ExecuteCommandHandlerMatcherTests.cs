@@ -5,6 +5,7 @@ using Castle.Core.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -65,8 +66,8 @@ namespace Lsp.Tests.Matchers
 
             // When
             var result = handlerMatcher.FindHandler(new ExecuteCommandParams { Command = "Command" },
-                new List<HandlerDescriptor> {
-                    new HandlerDescriptor("workspace/executeCommand",
+                new List<LspHandlerDescriptor> {
+                    new LspHandlerDescriptor("workspace/executeCommand",
                         "Key",
                         executeCommandHandler,
                         executeCommandHandler.GetType(),

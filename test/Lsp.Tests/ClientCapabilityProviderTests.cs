@@ -13,7 +13,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Xunit;
-using HandlerCollection = OmniSharp.Extensions.LanguageServer.Server.HandlerCollection;
+using HandlerCollection = OmniSharp.Extensions.LanguageServer.Shared.HandlerCollection;
 
 namespace Lsp.Tests
 {

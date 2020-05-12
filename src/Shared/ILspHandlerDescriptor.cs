@@ -1,7 +1,7 @@
 using System;
 using OmniSharp.Extensions.JsonRpc;
 
-namespace OmniSharp.Extensions.LanguageServer.Server.Abstractions
+namespace OmniSharp.Extensions.LanguageProtocolShared
 {
     public interface ILspHandlerDescriptor : IHandlerDescriptor
     {
@@ -15,6 +15,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server.Abstractions
         Type CapabilityType { get; }
         bool IsDynamicCapability { get; }
         Type CanBeResolvedHandlerType { get; }
-        StartedDelegate StartedDelegate { get; }
+        OnServerStartedDelegate OnServerStartedDelegate { get; }
+        OnClientStartedDelegate OnClientStartedDelegate { get; }
     }
 }
