@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol
+namespace OmniSharp.Extensions.LanguageServer.Protocol.Document
 {
     public interface ITextDocumentIdentifier
     {
@@ -25,7 +25,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
 
         protected abstract (string languageId, string schema) GetAttributes(DocumentUri uri);
     }
-    internal class TextDocumentIdentifiers : IEnumerable<ITextDocumentIdentifier>
+
+    public class TextDocumentIdentifiers : IEnumerable<ITextDocumentIdentifier>
     {
         private readonly HashSet<ITextDocumentIdentifier> _textDocumentIdentifiers = new HashSet<ITextDocumentIdentifier>();
         public IEnumerator<ITextDocumentIdentifier> GetEnumerator() => _textDocumentIdentifiers.GetEnumerator();

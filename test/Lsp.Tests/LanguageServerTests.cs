@@ -1,23 +1,19 @@
 using System;
-using System.IO;
-using System.Reactive.Linq;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 using MediatR;
 using OmniSharp.Extensions.LanguageServer.Client;
 using OmniSharp.Extensions.LanguageServer.Client.Processes;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Shared;
 
 namespace Lsp.Tests
 {
@@ -30,9 +26,13 @@ namespace Lsp.Tests
         [Fact(Skip = "Doesn't work in CI :(")]
         public async Task Works_With_IWorkspaceSymbolsHandler()
         {
+            var pipe = new Pipe();
+
             var process = new NamedPipeServerProcess(Guid.NewGuid().ToString("N"), LoggerFactory);
             await process.Start();
-            var client = new LanguageClient(LoggerFactory, process);
+            var client = await LanguageClient.From(options => {
+                options.Services.AddSingleton(LoggerFactory);
+            });
 
             var handler = Substitute.For<IWorkspaceSymbolsHandler>();
             var cts = new CancellationTokenSource();
@@ -45,13 +45,7 @@ namespace Lsp.Tests
                 cts.Token
             );
 
-            await Task.WhenAll(
-                client.Initialize(
-                    Directory.GetCurrentDirectory(),
-                    new object(),
-                    cts.Token),
-                serverStart
-            );
+            await Task.WhenAll(client.Initialize(cts.Token), serverStart);
             using var server = await serverStart;
             server.AddHandlers(handler);
         }
@@ -77,12 +71,15 @@ namespace Lsp.Tests
         [Fact(Skip = "Doesn't work in CI :(")]
         public async Task TriggersStartedTask()
         {
-            var startupInterface = Substitute.For(new [] {typeof(IOnStarted), typeof(IDidChangeConfigurationHandler) }, Array.Empty<object>()) as IOnStarted;
-            var startedDelegate = Substitute.For<StartedDelegate>();
+            var startupInterface = Substitute.For(new [] {typeof(IOnServerStarted), typeof(IDidChangeConfigurationHandler) }, Array.Empty<object>()) as IOnServerStarted;
+            var startedDelegate = Substitute.For<OnServerStartedDelegate>();
             startedDelegate(Arg.Any<ILanguageServer>(), Arg.Any<InitializeResult>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             var process = new NamedPipeServerProcess(Guid.NewGuid().ToString("N"), LoggerFactory);
             await process.Start();
-            var client = new LanguageClient(LoggerFactory, process);
+            var client = await LanguageClient.From(options => {
+                options.Services.AddSingleton(LoggerFactory);
+            });
+
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(15));
             var serverStart = LanguageServer.From(x => x
@@ -97,13 +94,7 @@ namespace Lsp.Tests
                 .AddHandlers(TextDocumentSyncHandlerExtensions.With(DocumentSelector.ForPattern("**/*.cs"), "csharp"))
             , cts.Token);
 
-            await Task.WhenAll(
-                client.Initialize(
-                    Directory.GetCurrentDirectory(),
-                    new object(),
-                    cts.Token),
-                serverStart
-            );
+            await Task.WhenAll(client.Initialize(cts.Token), serverStart);
             using var server = await serverStart;
 
             _ = startedDelegate.Received(4)(Arg.Any<ILanguageServer>(), Arg.Any<InitializeResult>(), Arg.Any<CancellationToken>());

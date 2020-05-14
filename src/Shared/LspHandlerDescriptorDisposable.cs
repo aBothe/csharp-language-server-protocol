@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OmniSharp.Extensions.LanguageProtocolShared
+namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     class LspHandlerDescriptorDisposable : IDisposable
     {

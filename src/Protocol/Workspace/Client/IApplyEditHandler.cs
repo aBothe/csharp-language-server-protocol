@@ -1,12 +1,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
     [Parallel, Method(WorkspaceNames.ApplyEdit)]
     public interface IApplyEditHandler : IJsonRpcRequestHandler<ApplyWorkspaceEditParams, ApplyWorkspaceEditResponse> { }
@@ -20,7 +23,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
     {
         public static IDisposable OnApplyEdit(this ILanguageClientRegistry registry, Func<ApplyWorkspaceEditParams, Task<ApplyWorkspaceEditResponse>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : ApplyEditHandler

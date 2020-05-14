@@ -1,25 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.Completion)]
+    [Parallel, Method(TextDocumentNames.Completion)]
     public interface ICompletionHandler : IJsonRpcRequestHandler<CompletionParams, CompletionList>, IRegistration<CompletionRegistrationOptions>, ICapability<CompletionCapability> { }
 
-    [Parallel, Method(DocumentNames.CompletionResolve)]
+    [Parallel, Method(TextDocumentNames.CompletionResolve)]
     public interface ICompletionResolveHandler : ICanBeResolvedHandler<CompletionItem> { }
 
     public abstract class CompletionHandler : ICompletionHandler, ICompletionResolveHandler
     {
         private readonly CompletionRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public CompletionHandler(CompletionRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public CompletionHandler(CompletionRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -45,7 +48,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
         {
             registrationOptions ??= new CompletionRegistrationOptions();
             registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
-            return registry.AddHandlers(new DelegatingHandler(handler, resolveHandler, registry.ProgressManager, canResolve, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link, token) => Task.FromException<CompletionItem>(new NotImplementedException());
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, resolveHandler, canResolve, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : CompletionHandler
@@ -58,7 +64,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             public DelegatingHandler(
                 Func<CompletionParams, CancellationToken, Task<CompletionList>> handler,
                 Func<CompletionItem, CancellationToken, Task<CompletionItem>> resolveHandler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Func<CompletionItem, bool> canResolve,
                 Action<CompletionCapability> setCapability,
                 CompletionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)

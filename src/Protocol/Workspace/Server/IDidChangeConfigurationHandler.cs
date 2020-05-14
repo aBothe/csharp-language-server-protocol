@@ -1,15 +1,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(WorkspaceNames.DidChangeConfiguration)]
     public interface IDidChangeConfigurationHandler : IJsonRpcNotificationHandler<DidChangeConfigurationParams>, IRegistration<object>, ICapability<DidChangeConfigurationCapability> { }
@@ -29,7 +31,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Func<DidChangeConfigurationParams, CancellationToken, Task<Unit>> handler,
             Action<DidChangeConfigurationCapability> setCapability = null)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability));
         }
 
         class DelegatingHandler : DidChangeConfigurationHandler

@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(DocumentNames.SelectionRange)]
+    [Method(TextDocumentNames.SelectionRange)]
     public class SelectionRangeParam : ITextDocumentIdentifierParams, IRequest<Container<SelectionRange>>, IWorkDoneProgressParams, IPartialItems<SelectionRange>
     {
         /// <summary>

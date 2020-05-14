@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
@@ -17,7 +18,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
     {
         public static IDisposable OnStepIn(this IDebugAdapterRegistry registry, Func<StepInArguments, CancellationToken, Task<StepInResponse>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : StepInHandler

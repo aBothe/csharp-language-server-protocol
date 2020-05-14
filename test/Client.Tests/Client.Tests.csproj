@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <AssemblyName>OmniSharp.Extensions.LanguageClient.Tests</AssemblyName>
-        <RootNamespace>OmniSharp.Extensions.LanguageServerProtocol.Client.Tests</RootNamespace>
+        <RootNamespace>OmniSharp.Extensions.LanguageServer.Client.Tests</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

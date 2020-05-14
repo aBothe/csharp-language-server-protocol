@@ -5,11 +5,11 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
     public static class InitializeExtensions
     {
-        public static Task<InitializeResult> SendInitialize(this ILanguageClient mediator, InitializeParams @params, CancellationToken cancellationToken = default)
+        public static Task<InitializeResult> RequestInitialize(this ILanguageClient mediator, InitializeParams @params, CancellationToken cancellationToken = default)
         {
             return mediator.SendRequest(@params, cancellationToken);
         }

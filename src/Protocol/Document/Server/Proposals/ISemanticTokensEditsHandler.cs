@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OmniSharp.Extensions.JsonRpc;
@@ -12,14 +10,14 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
 {
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.SemanticTokens)]
+    [Parallel, Method(TextDocumentNames.SemanticTokens)]
     public interface ISemanticTokensHandler : IJsonRpcRequestHandler<SemanticTokensParams, SemanticTokens>,
         IRegistration<SemanticTokensRegistrationOptions>, ICapability<SemanticTokensCapability>
     {
     }
 
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.SemanticTokensEdits)]
+    [Parallel, Method(TextDocumentNames.SemanticTokensEdits)]
     public interface ISemanticTokensEditsHandler :
         IJsonRpcRequestHandler<SemanticTokensEditsParams, SemanticTokensOrSemanticTokensEdits>,
         IRegistration<SemanticTokensRegistrationOptions>, ICapability<SemanticTokensCapability>
@@ -27,7 +25,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     }
 
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.SemanticTokensRange)]
+    [Parallel, Method(TextDocumentNames.SemanticTokensRange)]
     public interface ISemanticTokensRangeHandler : IJsonRpcRequestHandler<SemanticTokensRangeParams, SemanticTokens>,
         IRegistration<SemanticTokensRegistrationOptions>, ICapability<SemanticTokensCapability>
     {
@@ -107,6 +105,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
             {
                 registrationOptions.DocumentProvider.Edits = true;
             }
+            setCapability ??= x => { };
 
             return registry.AddHandlers(
                 new DelegatingHandler(tokenize, getSemanticTokensDocument, setCapability, registrationOptions));

@@ -10,7 +10,7 @@ using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.JsonRpc.Server;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
-namespace OmniSharp.Extensions.LanguageProtocolShared
+namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     internal class LspRequestRouter : RequestRouterBase<ILspHandlerDescriptor>, IRequestRouter<IHandlerDescriptor>
     {

@@ -1,6 +1,4 @@
 using System;
-using Newtonsoft.Json;
-using OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Converters;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
@@ -20,7 +18,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Equals(Uri, other.Uri) && Name == other.Name;
+            return Uri.Equals(other.Uri) && Name == other.Name;
         }
 
         public override bool Equals(object obj)
@@ -31,7 +29,13 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
             return Equals((WorkspaceFolder) obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(Uri, Name);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Uri.GetHashCode() * 397) ^ Name.GetHashCode();
+            }
+        }
 
         public static bool operator ==(WorkspaceFolder left, WorkspaceFolder right) => Equals(left, right);
 

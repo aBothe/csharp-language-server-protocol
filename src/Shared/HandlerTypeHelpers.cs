@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using OmniSharp.Extensions.JsonRpc;
 
-namespace OmniSharp.Extensions.LanguageProtocolShared
+namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     public static class HandlerTypeHelpers
     {
@@ -20,6 +20,7 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
 
         public static Type GetHandlerInterface(Type type)
         {
+            if (IsValidInterface(type)) return type;
             return type?.GetTypeInfo()
                 .ImplementedInterfaces
                 .First(IsValidInterface);

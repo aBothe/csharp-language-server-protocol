@@ -1,22 +1,25 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.TypeDefinition)]
+    [Parallel, Method(TextDocumentNames.TypeDefinition)]
     public interface ITypeDefinitionHandler : IJsonRpcRequestHandler<TypeDefinitionParams, LocationOrLocationLinks>, IRegistration<TypeDefinitionRegistrationOptions>, ICapability<TypeDefinitionCapability> { }
 
     public abstract class TypeDefinitionHandler : ITypeDefinitionHandler
     {
         private readonly TypeDefinitionRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public TypeDefinitionHandler(TypeDefinitionRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public TypeDefinitionHandler(TypeDefinitionRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -37,7 +40,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<TypeDefinitionCapability> setCapability = null)
         {
             registrationOptions ??= new TypeDefinitionRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : TypeDefinitionHandler
@@ -47,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<TypeDefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<TypeDefinitionCapability> setCapability,
                 TypeDefinitionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

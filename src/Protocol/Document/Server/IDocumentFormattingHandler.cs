@@ -1,15 +1,18 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Serial, Method(DocumentNames.Formatting)]
+    [Serial, Method(TextDocumentNames.Formatting)]
     public interface IDocumentFormattingHandler : IJsonRpcRequestHandler<DocumentFormattingParams, TextEditContainer>, IRegistration<DocumentFormattingRegistrationOptions>, ICapability<DocumentFormattingCapability> { }
 
     public abstract class DocumentFormattingHandler : IDocumentFormattingHandler
@@ -35,7 +38,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<DocumentFormattingCapability> setCapability = null)
         {
             registrationOptions ??= new DocumentFormattingRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : DocumentFormattingHandler

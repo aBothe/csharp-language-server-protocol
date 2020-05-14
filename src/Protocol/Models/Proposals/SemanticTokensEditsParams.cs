@@ -8,7 +8,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals
     /// @since 3.16.0
     /// </summary>
     [Obsolete(Constants.Proposal)]
-    [Method(DocumentNames.SemanticTokensEdits)]
+    [Method(TextDocumentNames.SemanticTokensEdits)]
     public class SemanticTokensEditsParams : IWorkDoneProgressParams, ITextDocumentIdentifierParams,
         IPartialItem<SemanticTokensPartialResultOrSemanticTokensEditsPartialResult>, IRequest<SemanticTokensOrSemanticTokensEdits>
     {

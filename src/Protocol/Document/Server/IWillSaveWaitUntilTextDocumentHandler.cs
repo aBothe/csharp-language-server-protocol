@@ -1,16 +1,18 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Serial, Method(DocumentNames.WillSaveWaitUntil)]
+    [Serial, Method(TextDocumentNames.WillSaveWaitUntil)]
     public interface IWillSaveWaitUntilTextDocumentHandler : IJsonRpcRequestHandler<WillSaveWaitUntilTextDocumentParams, TextEditContainer>, IRegistration<TextDocumentRegistrationOptions>, ICapability<SynchronizationCapability> { }
 
     public abstract class WillSaveWaitUntilTextDocumentHandler : IWillSaveWaitUntilTextDocumentHandler
@@ -36,7 +38,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<SynchronizationCapability> setCapability = null)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : WillSaveWaitUntilTextDocumentHandler

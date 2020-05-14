@@ -2,13 +2,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(WorkspaceNames.DidChangeWatchedFiles)]
     public interface IDidChangeWatchedFilesHandler : IJsonRpcNotificationHandler<DidChangeWatchedFilesParams>, IRegistration<DidChangeWatchedFilesRegistrationOptions>, ICapability<DidChangeWatchedFilesCapability> { }
@@ -36,7 +39,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             DidChangeWatchedFilesRegistrationOptions registrationOptions = null)
         {
             registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : DidChangeWatchedFilesHandler

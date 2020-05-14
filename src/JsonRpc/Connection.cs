@@ -1,14 +1,13 @@
 using System;
-using System.IO;
 using System.IO.Pipelines;
 using Microsoft.Extensions.Logging;
-using Nerdbank.Streams;
 
 namespace OmniSharp.Extensions.JsonRpc
 {
     public class Connection : IDisposable
     {
         private readonly InputHandler _inputHandler;
+        public bool IsOpen { get; private set; }
 
         public Connection(
             PipeReader input,
@@ -38,11 +37,13 @@ namespace OmniSharp.Extensions.JsonRpc
         {
             // TODO: Throw if called twice?
             _inputHandler.Start();
+            IsOpen = true;
         }
 
         public void Dispose()
         {
             _inputHandler?.Dispose();
+            IsOpen = false;
         }
     }
 }

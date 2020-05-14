@@ -1,31 +1,40 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.CodeAction)]
-    public interface ICodeActionHandler : IJsonRpcRequestHandler<CodeActionParams, CommandOrCodeActionContainer>, IRegistration<CodeActionRegistrationOptions>, ICapability<CodeActionCapability> { }
+    [Parallel, Method(TextDocumentNames.CodeAction)]
+    public interface ICodeActionHandler : IJsonRpcRequestHandler<CodeActionParams, CommandOrCodeActionContainer>,
+        IRegistration<CodeActionRegistrationOptions>, ICapability<CodeActionCapability>
+    {
+    }
 
     public abstract class CodeActionHandler : ICodeActionHandler
     {
         private readonly CodeActionRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
+        protected IWorkDoneProgressManager ProgressManager { get; }
 
-        public CodeActionHandler(CodeActionRegistrationOptions registrationOptions, ProgressManager progressManager)
+        public CodeActionHandler(CodeActionRegistrationOptions registrationOptions,
+            IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
         }
 
         public CodeActionRegistrationOptions GetRegistrationOptions() => _options;
-        public abstract Task<CommandOrCodeActionContainer> Handle(CodeActionParams request, CancellationToken cancellationToken);
+
+        public abstract Task<CommandOrCodeActionContainer> Handle(CodeActionParams request,
+            CancellationToken cancellationToken);
+
         public virtual void SetCapability(CodeActionCapability capability) => Capability = capability;
         protected CodeActionCapability Capability { get; private set; }
     }
@@ -39,7 +48,9 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<CodeActionCapability> setCapability = null)
         {
             registrationOptions ??= new CodeActionRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ =>
+                ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         internal class DelegatingHandler : CodeActionHandler
@@ -49,7 +60,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<CodeActionParams, CancellationToken, Task<CommandOrCodeActionContainer>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<CodeActionCapability> setCapability,
                 CodeActionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {
@@ -57,7 +68,9 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
                 _setCapability = setCapability;
             }
 
-            public override Task<CommandOrCodeActionContainer> Handle(CodeActionParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            public override Task<CommandOrCodeActionContainer> Handle(CodeActionParams request,
+                CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+
             public override void SetCapability(CodeActionCapability capability) => _setCapability?.Invoke(capability);
         }
     }

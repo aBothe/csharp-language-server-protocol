@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -14,35 +13,35 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Server.Abstractions;
 using OmniSharp.Extensions.LanguageServer.Server.Handlers;
 using OmniSharp.Extensions.LanguageServer.Server.Matchers;
 using OmniSharp.Extensions.LanguageServer.Server.Pipelines;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Nerdbank.Streams;
-using OmniSharp.Extensions.LanguageProtocolShared;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Server.Configuration;
 using OmniSharp.Extensions.LanguageServer.Server.Logging;
+using OmniSharp.Extensions.LanguageServer.Shared;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    public class LanguageServer : ILanguageServer, IInitializeHandler, IInitializedHandler, IAwaitableTermination, IDisposable
+    public class LanguageServer : ILanguageServer, IInitializeHandler, IInitializedHandler, IAwaitableTermination,
+        IDisposable
     {
         private readonly Connection _connection;
         private readonly ServerShutdownHandler _shutdownHandler = new ServerShutdownHandler();
         private readonly ServerExitHandler _exitHandler;
         private ClientVersion? _clientVersion;
         private readonly ServerInfo _serverInfo;
-        private readonly ProgressManager _progressManager;
+        private readonly IWorkDoneProgressManager _progressManager;
         private readonly ILspServerReceiver _serverReceiver;
         private readonly ISerializer _serializer;
         private readonly TextDocumentIdentifiers _textDocumentIdentifiers;
@@ -84,7 +83,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
         public static async Task<ILanguageServer> From(LanguageServerOptions options, CancellationToken token)
         {
-            var server = (LanguageServer)PreInit(options);
+            var server = (LanguageServer) PreInit(options);
             await server.Initialize(token);
 
             return server;
@@ -126,7 +125,8 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             _initializedDelegates = options.InitializedDelegates;
             _startedDelegates = options.StartedDelegates;
 
-            services.AddSingleton<IOutputHandler>(_ => ActivatorUtilities.CreateInstance<OutputHandler>(_, options.Output.UsePipeWriter()));
+            services.AddSingleton<IOutputHandler>(_ =>
+                new OutputHandler(options.Output, options.Serializer, _.GetService<ILogger<OutputHandler>>()));
             services.AddSingleton(_collection);
             services.AddSingleton(_textDocumentIdentifiers);
             services.AddSingleton(_serializer);
@@ -157,9 +157,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
             services.AddJsonRpcMediatR(options.HandlerAssemblies);
             services.AddTransient<IHandlerMatcher, TextDocumentMatcher>();
-            services.AddSingleton<Protocol.Server.ILanguageServer>(this);
             services.AddSingleton<ILanguageServer>(this);
-            services.AddSingleton<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(this);
             services.AddTransient<IHandlerMatcher, ExecuteCommandMatcher>();
             services.AddTransient<IHandlerMatcher, ResolveCommandMatcher>();
             services.AddSingleton<LspRequestRouter>();
@@ -187,13 +185,14 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             }
 
             services.AddSingleton(_progressManager);
+
             _serviceProvider = services.BuildServiceProvider();
             collection.SetServiceProvider(_serviceProvider);
 
             var requestRouter = _serviceProvider.GetRequiredService<IRequestRouter<ILspHandlerDescriptor>>();
             _responseRouter = _serviceProvider.GetRequiredService<IResponseRouter>();
             _connection = new Connection(
-                options.Input.UsePipeReader(),
+                options.Input,
                 _serviceProvider.GetRequiredService<IOutputHandler>(),
                 options.Receiver,
                 options.RequestProcessIdentifier,
@@ -207,14 +206,14 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             _exitHandler = new ServerExitHandler(_shutdownHandler);
 
             // We need to at least create Window here in case any handler does loggin in their constructor
-            Document = new LanguageServerDocument(_responseRouter);
-            Client = new LanguageServerClient(_responseRouter);
-            Window = new LanguageServerWindow(_responseRouter);
-            Workspace = new LanguageServerWorkspace(_responseRouter);
+            TextDocument = new TextDocumentLanguageServer(_responseRouter, _serviceProvider);
+            Client = new ClientLanguageServer(_responseRouter, _serviceProvider);
+            Window = new WindowLanguageServer(_responseRouter, _serviceProvider);
+            Workspace = new WorkspaceLanguageServer(_responseRouter, _serviceProvider);
 
             _disposable.Add(
-                AddHandlers(this, _shutdownHandler, _exitHandler,
-                    new CancelRequestHandler<ILspHandlerDescriptor>(requestRouter), _progressManager)
+                _collection.Add(this, _shutdownHandler, _exitHandler,
+                    new CancelRequestHandler<ILspHandlerDescriptor>(requestRouter))
             );
 
             var serviceHandlers = _serviceProvider.GetServices<IJsonRpcHandler>().ToArray();
@@ -233,11 +232,11 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             }
         }
 
-        public ILanguageServerDocument Document { get; }
-        public ILanguageServerClient Client { get; }
-        public ILanguageServerWindow Window { get; }
-        public ILanguageServerWorkspace Workspace { get; }
-        public ProgressManager ProgressManager => _progressManager;
+        public ITextDocumentLanguageServer TextDocument { get; }
+        public IClientLanguageServer Client { get; }
+        public IWindowLanguageServer Window { get; }
+        public IWorkspaceLanguageServer Workspace { get; }
+        public IWorkDoneProgressManager ProgressManager => _progressManager;
 
         public InitializeParams ClientSettings { get; private set; }
         public InitializeResult ServerSettings { get; private set; }
@@ -248,25 +247,32 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public IDisposable AddHandler(string method, IJsonRpcHandler handler)
         {
             var handlerDisposable = _collection.Add(method, handler);
-            return RegisterHandlers(handlerDisposable, CancellationToken.None);
+            return RegisterHandlers(handlerDisposable);
         }
 
         public IDisposable AddHandler(string method, Func<IServiceProvider, IJsonRpcHandler> handlerFunc)
         {
             var handlerDisposable = _collection.Add(method, handlerFunc);
-            return RegisterHandlers(handlerDisposable, CancellationToken.None);
+            return RegisterHandlers(handlerDisposable);
+        }
+
+        public IDisposable AddHandler(Func<IServiceProvider, IJsonRpcHandler> handlerFunc)
+        {
+            var instance = handlerFunc(_serviceProvider);
+            var handlerDisposable = _collection.Add(HandlerTypeHelper.GetMethodName(instance.GetType()), instance);
+            return RegisterHandlers(handlerDisposable);
         }
 
         public IDisposable AddHandlers(params IJsonRpcHandler[] handlers)
         {
             var handlerDisposable = _collection.Add(handlers);
-            return RegisterHandlers(handlerDisposable, CancellationToken.None);
+            return RegisterHandlers(handlerDisposable);
         }
 
         public IDisposable AddHandler(string method, Type handlerType)
         {
             var handlerDisposable = _collection.Add(method, handlerType);
-            return RegisterHandlers(handlerDisposable, CancellationToken.None);
+            return RegisterHandlers(handlerDisposable);
         }
 
         public IDisposable AddHandler<T>()
@@ -275,10 +281,16 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             return AddHandlers(typeof(T));
         }
 
+        public IDisposable AddHandler<T>(Func<IServiceProvider, T> factory)
+            where T : IJsonRpcHandler
+        {
+            return AddHandlers(factory(_serviceProvider));
+        }
+
         public IDisposable AddHandlers(params Type[] handlerTypes)
         {
             var handlerDisposable = _collection.Add(_serviceProvider, handlerTypes);
-            return RegisterHandlers(handlerDisposable, CancellationToken.None);
+            return RegisterHandlers(handlerDisposable);
         }
 
         public IDisposable AddTextDocumentIdentifier(params ITextDocumentIdentifier[] handlers)
@@ -325,21 +337,23 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                         .Select(z => result)
                     )
                     .Merge()
-                    .LastAsync()
+                    .LastOrDefaultAsync()
                     .ToTask(token);
                 await _initializingTask;
             }
             catch (TaskCanceledException e)
             {
                 _initializeComplete.OnError(e);
+                throw;
             }
             catch (Exception e)
             {
                 _initializeComplete.OnError(e);
+                throw;
             }
         }
 
-        private IDisposable RegisterHandlers(LspHandlerDescriptorDisposable handlerDisposable, CancellationToken token)
+        private IDisposable RegisterHandlers(LspHandlerDescriptorDisposable handlerDisposable)
         {
             var registrations = new List<Registration>();
             foreach (var descriptor in handlerDisposable.Descriptors)
@@ -350,6 +364,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                     {
                         wdpo.WorkDoneProgress = _progressManager.IsSupported;
                     }
+
                     registrations.Add(new Registration() {
                         Id = descriptor.Id.ToString(),
                         Method = descriptor.Method,
@@ -362,7 +377,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                     // Fire and forget to initialize the handler
                     _initializeComplete
                         .Select(result =>
-                            Observable.FromAsync(() => descriptor.OnServerStartedDelegate(this, result, token)))
+                            Observable.FromAsync((ct) => descriptor.OnServerStartedDelegate(this, result, ct)))
                         .Merge()
                         .Subscribe();
                 }
@@ -371,7 +386,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             // Fire and forget
             DynamicallyRegisterHandlers(registrations.ToArray()).ToObservable().Subscribe();
 
-            return new ImmutableDisposable(
+            return new CompositeDisposable(
                 handlerDisposable,
                 Disposable.Create(() => {
                     Client.UnregisterCapability(new UnregistrationParams() {
@@ -435,7 +450,11 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             var windowCapabilities = ClientSettings.Capabilities.Window ??= new WindowClientCapabilities();
             _progressManager.Initialized(_responseRouter, _serializer, windowCapabilities);
 
-            AddHandlers(_serviceProvider.GetServices<IJsonRpcHandler>().ToArray());
+            AddHandlers(_collection
+                .Where(z => z.HasRegistration && z.RegistrationOptions != null)
+                .Select(z => z.Handler)
+                .ToArray()
+            );
 
             await Task.WhenAll(_initializeDelegates.Select(c => c(this, request, token)));
 
@@ -457,9 +476,11 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                 DocumentLinkProvider = ccp.GetStaticOptions(textDocumentCapabilities.DocumentLink)
                     .Get<IDocumentLinkOptions, DocumentLinkOptions>(DocumentLinkOptions.Of),
                 DocumentOnTypeFormattingProvider = ccp.GetStaticOptions(textDocumentCapabilities.OnTypeFormatting)
-                    .Get<IDocumentOnTypeFormattingOptions, DocumentOnTypeFormattingOptions>(DocumentOnTypeFormattingOptions.Of),
+                    .Get<IDocumentOnTypeFormattingOptions, DocumentOnTypeFormattingOptions>(
+                        DocumentOnTypeFormattingOptions.Of),
                 DocumentRangeFormattingProvider = ccp.GetStaticOptions(textDocumentCapabilities.RangeFormatting)
-                    .Get<IDocumentRangeFormattingOptions, DocumentRangeFormattingOptions>(DocumentRangeFormattingOptions.Of),
+                    .Get<IDocumentRangeFormattingOptions, DocumentRangeFormattingOptions>(DocumentRangeFormattingOptions
+                        .Of),
                 DocumentSymbolProvider = ccp.GetStaticOptions(textDocumentCapabilities.DocumentSymbol)
                     .Get<IDocumentSymbolOptions, DocumentSymbolOptions>(DocumentSymbolOptions.Of),
                 ExecuteCommandProvider = ccp.GetStaticOptions(workspaceCapabilities.ExecuteCommand)
@@ -534,7 +555,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                         OpenClose = _collection.ContainsHandler(typeof(IDidOpenTextDocumentHandler)) ||
                                     _collection.ContainsHandler(typeof(IDidCloseTextDocumentHandler)),
                         Save = _collection.ContainsHandler(typeof(IDidSaveTextDocumentHandler))
-                            ? new SaveOptions() { IncludeText = true /* TODO: Make configurable */}
+                            ? new SaveOptions() {IncludeText = true /* TODO: Make configurable */}
                             : null,
                         WillSave = _collection.ContainsHandler(typeof(IWillSaveTextDocumentHandler)),
                         WillSaveWaitUntil = _collection.ContainsHandler(typeof(IWillSaveWaitUntilTextDocumentHandler))
@@ -596,7 +617,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             if (registrations.Length == 0)
                 return; // No dynamic registrations supported by client.
 
-            var @params = new RegistrationParams() { Registrations = registrations };
+            var @params = new RegistrationParams() {Registrations = registrations};
 
             await _initializeComplete;
 

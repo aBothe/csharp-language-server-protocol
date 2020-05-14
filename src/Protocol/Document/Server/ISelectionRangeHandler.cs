@@ -1,22 +1,25 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable once CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.SelectionRange)]
+    [Parallel, Method(TextDocumentNames.SelectionRange)]
     public interface ISelectionRangeHandler : IJsonRpcRequestHandler<SelectionRangeParam, Container<SelectionRange>>, IRegistration<SelectionRangeRegistrationOptions>, ICapability<SelectionRangeCapability> { }
 
     public abstract class SelectionRangeHandler : ISelectionRangeHandler
     {
         private readonly SelectionRangeRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public SelectionRangeHandler(SelectionRangeRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public SelectionRangeHandler(SelectionRangeRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -37,7 +40,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<SelectionRangeCapability> setCapability = null)
         {
             registrationOptions ??= new SelectionRangeRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : SelectionRangeHandler
@@ -47,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<SelectionRangeParam, CancellationToken, Task<Container<SelectionRange>>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<SelectionRangeCapability> setCapability,
                 SelectionRangeRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

@@ -2,12 +2,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(GeneralNames.Shutdown)]
     public interface IShutdownHandler : IJsonRpcRequestHandler<EmptyRequest> { }
@@ -21,7 +23,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
     {
         public static IDisposable OnShutdown(this ILanguageServerRegistry registry, Func<Task<Unit>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : ShutdownHandler

@@ -1,15 +1,18 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Serial, Method(DocumentNames.Rename)]
+    [Serial, Method(TextDocumentNames.Rename)]
     public interface IRenameHandler : IJsonRpcRequestHandler<RenameParams, WorkspaceEdit>, IRegistration<RenameRegistrationOptions>, ICapability<RenameCapability> { }
 
     public abstract class RenameHandler : IRenameHandler
@@ -35,7 +38,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<RenameCapability> setCapability = null)
         {
             registrationOptions ??= new RenameRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : RenameHandler

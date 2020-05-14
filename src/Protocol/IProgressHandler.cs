@@ -2,13 +2,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-
-// ReSharper disable CheckNamespace
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol
 {
@@ -26,13 +24,13 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             this ILanguageServerRegistry registry,
             Func<ProgressParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
         public static IDisposable OnProgress(
             this ILanguageClientRegistry registry,
             Func<ProgressParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : ProgressHandler

@@ -1,22 +1,25 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.References)]
+    [Parallel, Method(TextDocumentNames.References)]
     public interface IReferencesHandler : IJsonRpcRequestHandler<ReferenceParams, LocationContainer>, IRegistration<ReferenceRegistrationOptions>, ICapability<ReferenceCapability> { }
 
     public abstract class ReferencesHandler : IReferencesHandler
     {
         private readonly ReferenceRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public ReferencesHandler(ReferenceRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public ReferencesHandler(ReferenceRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -37,7 +40,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<ReferenceCapability> setCapability = null)
         {
             registrationOptions ??= new ReferenceRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : ReferencesHandler
@@ -47,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<ReferenceParams, CancellationToken, Task<LocationContainer>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<ReferenceCapability> setCapability,
                 ReferenceRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

@@ -7,9 +7,10 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace OmniSharp.Extensions.LanguageProtocolShared
+namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     class SharedHandlerCollection : IHandlerCollection
     {
@@ -20,7 +21,6 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
         private readonly TextDocumentIdentifiers _textDocumentIdentifiers;
         internal readonly HashSet<LspHandlerDescriptor> _handlers = new HashSet<LspHandlerDescriptor>();
         private IServiceProvider _serviceProvider;
-
 
         public SharedHandlerCollection(ISupportedCapabilities supportedCapabilities,
             TextDocumentIdentifiers textDocumentIdentifiers)
@@ -111,6 +111,8 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
             var cd = new CompositeDisposable();
             foreach (var handler in handlers)
             {
+                if (descriptors.Any(z => z.Handler == handler)) continue;
+
                 foreach (var (method, implementedInterface) in handler.GetType().GetTypeInfo()
                     .ImplementedInterfaces
                     .Select(x => (method: HandlerTypeHelper.GetMethodName(x), implementedInterface: x))
@@ -140,7 +142,8 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
         private LspHandlerDescriptor GetDescriptor(string method, Type handlerType, IJsonRpcHandler handler)
         {
             var @interface = HandlerTypeHelpers.GetHandlerInterface(handlerType);
-            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(@interface);
+            var registrationType = HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handler.GetType());
+            var capabilityType = HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handler.GetType());
 
             Type @params = null;
             object registrationOptions = null;
@@ -149,10 +152,10 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
                 @params = @interface.GetTypeInfo().GetGenericArguments()[0];
             }
 
-            if (typeDescriptor.HasRegistration)
+            if (registrationType != null)
             {
                 registrationOptions = GetRegistrationMethod
-                    .MakeGenericMethod(typeDescriptor.RegistrationType)
+                    .MakeGenericMethod(registrationType)
                     .Invoke(null, new object[] { handler });
             }
 
@@ -160,7 +163,7 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
             if (handler is IRegistration<TextDocumentRegistrationOptions> handlerRegistration)
             {
                 // Ensure we only do this check for the specific registartion type that was found
-                if (typeof(TextDocumentRegistrationOptions).GetTypeInfo().IsAssignableFrom(typeDescriptor.RegistrationType))
+                if (typeof(TextDocumentRegistrationOptions).GetTypeInfo().IsAssignableFrom(registrationType))
                 {
                     key = handlerRegistration?.GetRegistrationOptions()?.DocumentSelector ?? key;
                 }
@@ -181,10 +184,10 @@ namespace OmniSharp.Extensions.LanguageProtocolShared
                 handler,
                 @interface,
                 @params,
-                typeDescriptor.RegistrationType,
+                registrationType,
                 registrationOptions,
-                typeDescriptor.HasRegistration && _supportedCapabilities.AllowsDynamicRegistration(typeDescriptor.CapabilityType),
-                typeDescriptor.CapabilityType,
+                registrationType != null && _supportedCapabilities.AllowsDynamicRegistration(capabilityType),
+                capabilityType,
                 () => {
                     _handlers.RemoveWhere(d => d.Handler == handler);
                 });

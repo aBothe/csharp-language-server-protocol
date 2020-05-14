@@ -2,15 +2,18 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
 
-    [Parallel, Method(DocumentNames.PublishDiagnostics)]
+    [Parallel, Method(TextDocumentNames.PublishDiagnostics)]
     public interface IPublishDiagnosticsHandler : IJsonRpcNotificationHandler<PublishDiagnosticsParams> { }
 
     public abstract class PublishDiagnosticsHandler : IPublishDiagnosticsHandler
@@ -22,7 +25,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
     {
         public static IDisposable OnPublishDiagnostics(this ILanguageClientRegistry registry, Func<PublishDiagnosticsParams, Task<Unit>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(TextDocumentNames.PublishDiagnostics,_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : PublishDiagnosticsHandler

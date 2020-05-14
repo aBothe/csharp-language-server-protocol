@@ -1,16 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
-using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
     public static class DocumentSymbolExtensions
     {
-        public static Task<SymbolInformationOrDocumentSymbolContainer> DocumentSymbol(this ILanguageClientDocument mediator, DocumentSymbolParams @params, CancellationToken cancellationToken = default)
+        public static Task<SymbolInformationOrDocumentSymbolContainer> DocumentSymbol(this ITextDocumentLanguageClient mediator, DocumentSymbolParams @params, CancellationToken cancellationToken = default)
         {
             return mediator.SendRequest(@params, cancellationToken);
         }

@@ -1,7 +1,7 @@
 using System;
 using OmniSharp.Extensions.JsonRpc;
 
-namespace OmniSharp.Extensions.LanguageProtocolShared
+namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     public interface ILspHandlerDescriptor : IHandlerDescriptor
     {

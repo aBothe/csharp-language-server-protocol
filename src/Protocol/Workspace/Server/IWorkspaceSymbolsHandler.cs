@@ -1,13 +1,16 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Parallel, Method(WorkspaceNames.WorkspaceSymbol)]
     public interface IWorkspaceSymbolsHandler : IJsonRpcRequestHandler<WorkspaceSymbolParams, Container<SymbolInformation>>, ICapability<WorkspaceSymbolCapability>, IRegistration<WorkspaceSymbolRegistrationOptions> { }
@@ -16,8 +19,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
     {
         protected WorkspaceSymbolCapability Capability { get; private set; }
         private readonly WorkspaceSymbolRegistrationOptions _options;
-        protected readonly ProgressManager ProgressManager;
-        public WorkspaceSymbolsHandler(WorkspaceSymbolRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public WorkspaceSymbolsHandler(WorkspaceSymbolRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -37,7 +40,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             WorkspaceSymbolRegistrationOptions registrationOptions = null)
         {
             registrationOptions ??= new WorkspaceSymbolRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : WorkspaceSymbolsHandler
@@ -47,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<WorkspaceSymbolParams, CancellationToken, Task<Container<SymbolInformation>>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<WorkspaceSymbolCapability> setCapability,
                 WorkspaceSymbolRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

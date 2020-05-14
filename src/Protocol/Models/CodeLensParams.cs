@@ -1,12 +1,10 @@
 using MediatR;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(DocumentNames.CodeLens)]
+    [Method(TextDocumentNames.CodeLens)]
     public class CodeLensParams : ITextDocumentIdentifierParams, IRequest<CodeLensContainer>, IWorkDoneProgressParams, IPartialItems<CodeLens>
     {
         /// <summary>

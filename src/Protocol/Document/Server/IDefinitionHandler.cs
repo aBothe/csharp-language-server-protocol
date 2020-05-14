@@ -1,25 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.Definition)]
+    [Parallel, Method(TextDocumentNames.Definition)]
     public interface IDefinitionHandler : IJsonRpcRequestHandler<DefinitionParams, LocationOrLocationLinks>, IRegistration<DefinitionRegistrationOptions>, ICapability<DefinitionCapability> { }
 
     public abstract class DefinitionHandler : IDefinitionHandler
     {
         private readonly DefinitionRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public DefinitionHandler(DefinitionRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public DefinitionHandler(DefinitionRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
-            ProgressManager = progressManager;
+            ProgressManager = ProgressManager;
         }
 
         public DefinitionRegistrationOptions GetRegistrationOptions() => _options;
@@ -37,7 +40,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<DefinitionCapability> setCapability = null)
         {
             registrationOptions ??= new DefinitionRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, registry.ProgressManager, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : DefinitionHandler
@@ -47,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
 
             public DelegatingHandler(
                 Func<DefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<DefinitionCapability> setCapability,
                 DefinitionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

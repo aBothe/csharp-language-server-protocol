@@ -1,13 +1,16 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
     [Parallel, Method(WorkspaceNames.WorkspaceConfiguration)]
     public interface IConfigurationHandler : IJsonRpcRequestHandler<ConfigurationParams, Container<JToken>> { }
@@ -21,7 +24,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
     {
         public static IDisposable OnConfiguration(this ILanguageClientRegistry registry, Func<ConfigurationParams, Task<Container<JToken>>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : ConfigurationHandler

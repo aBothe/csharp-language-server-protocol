@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -104,9 +103,9 @@ namespace SampleServer
         }
     }
 
-    class MyDocumentSymbolHandler : OmniSharp.Extensions.LanguageServer.Protocol.Server.DocumentSymbolHandler
+    class MyDocumentSymbolHandler : OmniSharp.Extensions.LanguageServer.Server.DocumentSymbolHandler
     {
-        public MyDocumentSymbolHandler(ProgressManager progressManager) : base(new DocumentSymbolRegistrationOptions() {
+        public MyDocumentSymbolHandler(IWorkDoneProgressManager progressManager) : base(new DocumentSymbolRegistrationOptions() {
             DocumentSelector = DocumentSelector.ForLanguage("csharp")
         }, progressManager)
         {
@@ -155,11 +154,11 @@ namespace SampleServer
         }
     }
 
-    class MyWorkspaceSymbolsHandler : OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkspaceSymbolsHandler
+    class MyWorkspaceSymbolsHandler : OmniSharp.Extensions.LanguageServer.Server.WorkspaceSymbolsHandler
     {
         private readonly ILogger<MyWorkspaceSymbolsHandler> logger;
 
-        public MyWorkspaceSymbolsHandler(ProgressManager progressManager, ILogger<MyWorkspaceSymbolsHandler> logger) :
+        public MyWorkspaceSymbolsHandler(IWorkDoneProgressManager progressManager, ILogger<MyWorkspaceSymbolsHandler> logger) :
             base(new WorkspaceSymbolRegistrationOptions() { }, progressManager)
         {
             this.logger = logger;

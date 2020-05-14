@@ -1,7 +1,4 @@
-using System.Collections.Generic;
 using MediatR;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 

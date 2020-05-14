@@ -1,32 +1,31 @@
-﻿using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+﻿using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
+namespace OmniSharp.Extensions.LanguageServer.Client
 {
     public static class TextDocumentExtensions
     {
-        public static void DidChangeTextDocument(this ILanguageClientDocument mediator, DidChangeTextDocumentParams @params)
+        public static void DidChangeTextDocument(this ITextDocumentLanguageClient mediator, DidChangeTextDocumentParams @params)
         {
-            mediator.SendNotification(DocumentNames.DidChange, @params);
+            mediator.SendNotification(TextDocumentNames.DidChange, @params);
         }
 
-        public static void DidOpenTextDocument(this ILanguageClientDocument mediator, DidOpenTextDocumentParams @params)
+        public static void DidOpenTextDocument(this ITextDocumentLanguageClient mediator, DidOpenTextDocumentParams @params)
         {
-            mediator.SendNotification(DocumentNames.DidOpen, @params);
+            mediator.SendNotification(TextDocumentNames.DidOpen, @params);
         }
 
-        public static void DidSaveTextDocument(this ILanguageClientDocument mediator, DidSaveTextDocumentParams @params)
+        public static void DidSaveTextDocument(this ITextDocumentLanguageClient mediator, DidSaveTextDocumentParams @params)
         {
-            mediator.SendNotification(DocumentNames.DidSave, @params);
+            mediator.SendNotification(TextDocumentNames.DidSave, @params);
         }
 
-        public static void DidCloseTextDocument(this ILanguageClientDocument mediator, DidCloseTextDocumentParams @params)
+        public static void DidCloseTextDocument(this ITextDocumentLanguageClient mediator, DidCloseTextDocumentParams @params)
         {
-            mediator.SendNotification(DocumentNames.DidClose, @params);
+            mediator.SendNotification(TextDocumentNames.DidClose, @params);
         }
     }
 }

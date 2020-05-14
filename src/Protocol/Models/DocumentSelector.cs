@@ -1,14 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
     /// <summary>
     /// A collection of document filters used to identify valid documents
     /// </summary>
-    public class DocumentSelector : ContainerBase<DocumentFilter>
+    public class DocumentSelector : ContainerBase<DocumentFilter>, IEquatable<DocumentSelector>
     {
         public DocumentSelector() : this(Enumerable.Empty<DocumentFilter>())
         {
@@ -68,5 +68,21 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
         {
             return new DocumentSelector(schemes.Select(DocumentFilter.ForScheme));
         }
+
+        public bool Equals(DocumentSelector other) => this.Join(other ?? new DocumentSelector(), z => z, z => z, (a, b) => a).Count() == this.Count();
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((DocumentSelector) obj);
+        }
+
+        public override int GetHashCode() => throw new NotImplementedException();
+
+        public static bool operator ==(DocumentSelector left, DocumentSelector right) => Equals(left, right);
+
+        public static bool operator !=(DocumentSelector left, DocumentSelector right) => !Equals(left, right);
     }
 }

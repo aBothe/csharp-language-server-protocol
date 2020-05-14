@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -10,7 +11,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
 {
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.PrepareCallHierarchy)]
+    [Parallel, Method(TextDocumentNames.PrepareCallHierarchy)]
     public interface ICallHierarchyHandler :
         IJsonRpcRequestHandler<CallHierarchyPrepareParams, Container<CallHierarchyItem>>,
         IRegistration<CallHierarchyRegistrationOptions>, ICapability<CallHierarchyCapability>
@@ -18,14 +19,14 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     }
 
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.CallHierarchyIncoming)]
+    [Parallel, Method(TextDocumentNames.CallHierarchyIncoming)]
     public interface ICallHierarchyIncomingHandler : IJsonRpcRequestHandler<CallHierarchyIncomingCallsParams,
         Container<CallHierarchyIncomingCall>>
     {
     }
 
     [Obsolete(Constants.Proposal)]
-    [Parallel, Method(DocumentNames.CallHierarchyOutgoing)]
+    [Parallel, Method(TextDocumentNames.CallHierarchyOutgoing)]
     public interface ICallHierarchyOutgoingHandler : IJsonRpcRequestHandler<CallHierarchyOutgoingCallsParams,
         Container<CallHierarchyOutgoingCall>>
     {
@@ -36,10 +37,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
         ICallHierarchyOutgoingHandler
     {
         private readonly CallHierarchyRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
+        protected IWorkDoneProgressManager ProgressManager { get; }
 
         public CallHierarchyHandler(CallHierarchyRegistrationOptions registrationOptions,
-            ProgressManager progressManager)
+            IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -74,9 +75,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
             Action<CallHierarchyCapability> setCapability = null)
         {
             registrationOptions ??= new CallHierarchyRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, incomingHandler, outgoingHandler,
-                registry.ProgressManager,
-                setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, incomingHandler, outgoingHandler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : CallHierarchyHandler
@@ -101,7 +101,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
                     incomingHandler,
                 Func<CallHierarchyOutgoingCallsParams, CancellationToken, Task<Container<CallHierarchyOutgoingCall>>>
                     outgoingHandler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Action<CallHierarchyCapability> setCapability,
                 CallHierarchyRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
             {

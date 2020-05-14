@@ -1,25 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.CodeLens)]
+    [Parallel, Method(TextDocumentNames.CodeLens)]
     public interface ICodeLensHandler : IJsonRpcRequestHandler<CodeLensParams, CodeLensContainer>, IRegistration<CodeLensRegistrationOptions>, ICapability<CodeLensCapability> { }
 
-    [Parallel, Method(DocumentNames.CodeLensResolve)]
+    [Parallel, Method(TextDocumentNames.CodeLensResolve)]
     public interface ICodeLensResolveHandler : ICanBeResolvedHandler<CodeLens> { }
 
     public abstract class CodeLensHandler : ICodeLensHandler, ICodeLensResolveHandler
     {
         private readonly CodeLensRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public CodeLensHandler(CodeLensRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public CodeLensHandler(CodeLensRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -43,13 +46,12 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             CodeLensRegistrationOptions registrationOptions = null,
             Action<CodeLensCapability> setCapability = null)
         {
-            var codeLensRegistrationOptions = new CodeLensRegistrationOptions();
-            codeLensRegistrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
-            if (registrationOptions != null)
-            {
-                codeLensRegistrationOptions.DocumentSelector = registrationOptions.DocumentSelector;
-            }
-            return registry.AddHandlers(new DelegatingHandler(handler, resolveHandler, registry.ProgressManager, canResolve, setCapability, codeLensRegistrationOptions));
+            registrationOptions ??= new CodeLensRegistrationOptions();
+            registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
+            setCapability ??= x => { };
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link, token) => Task.FromException<CodeLens>(new NotImplementedException());
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, resolveHandler, canResolve, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : CodeLensHandler
@@ -62,7 +64,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             public DelegatingHandler(
                 Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> handler,
                 Func<CodeLens, CancellationToken, Task<CodeLens>> resolveHandler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Func<CodeLens, bool> canResolve,
                 Action<CodeLensCapability> setCapability,
                 CodeLensRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)

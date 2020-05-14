@@ -1,25 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.DocumentLink)]
+    [Parallel, Method(TextDocumentNames.DocumentLink)]
     public interface IDocumentLinkHandler : IJsonRpcRequestHandler<DocumentLinkParams, DocumentLinkContainer>, IRegistration<DocumentLinkRegistrationOptions>, ICapability<DocumentLinkCapability> { }
 
-    [Parallel, Method(DocumentNames.DocumentLinkResolve)]
+    [Parallel, Method(TextDocumentNames.DocumentLinkResolve)]
     public interface IDocumentLinkResolveHandler : ICanBeResolvedHandler<DocumentLink> { }
 
     public abstract class DocumentLinkHandler : IDocumentLinkHandler, IDocumentLinkResolveHandler
     {
         private readonly DocumentLinkRegistrationOptions _options;
-        protected ProgressManager ProgressManager { get; }
-        public DocumentLinkHandler(DocumentLinkRegistrationOptions registrationOptions, ProgressManager progressManager)
+        protected IWorkDoneProgressManager ProgressManager { get; }
+        public DocumentLinkHandler(DocumentLinkRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
@@ -50,7 +53,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
         {
             registrationOptions ??= new DocumentLinkRegistrationOptions();
             registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
-            return registry.AddHandlers(new DelegatingHandler(handler, resolveHandler, registry.ProgressManager, canResolve, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link, token) => Task.FromException<DocumentLink>(new NotImplementedException());
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, resolveHandler, canResolve, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : DocumentLinkHandler
@@ -63,7 +69,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             public DelegatingHandler(
                 Func<DocumentLinkParams, CancellationToken, Task<DocumentLinkContainer>> handler,
                 Func<DocumentLink, CancellationToken, Task<DocumentLink>> resolveHandler,
-                ProgressManager progressManager,
+                IWorkDoneProgressManager progressManager,
                 Func<DocumentLink, bool> canResolve,
                 Action<DocumentLinkCapability> setCapability,
                 DocumentLinkRegistrationOptions registrationOptions) : base(registrationOptions)

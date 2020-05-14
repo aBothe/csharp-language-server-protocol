@@ -1,17 +1,19 @@
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Parallel, Method(DocumentNames.ColorPresentation)]
+    [Parallel, Method(TextDocumentNames.ColorPresentation)]
     public interface IColorPresentationHandler : IJsonRpcRequestHandler<ColorPresentationParams, Container<ColorPresentation>>, IRegistration<DocumentColorRegistrationOptions>, ICapability<ColorProviderCapability> { }
 
     public abstract class ColorPresentationHandler : IColorPresentationHandler
@@ -37,7 +39,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<ColorProviderCapability> setCapability = null)
         {
             registrationOptions ??= new DocumentColorRegistrationOptions();
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability, registrationOptions));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
         }
 
         class DelegatingHandler : ColorPresentationHandler

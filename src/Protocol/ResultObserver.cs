@@ -5,14 +5,16 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
+using ISerializer = OmniSharp.Extensions.JsonRpc.ISerializer;
 
 // ReSharper disable once CheckNamespace
 namespace OmniSharp.Extensions.LanguageServer.Protocol
 {
-    public static class ProgressObserver
+    public abstract class ProgressObserver : IObserver<JToken>, IDisposable
     {
         public static ProgressObserver<WorkDoneProgressReport> CreateWorkDoneProgress(
             ProgressToken token,
@@ -28,7 +30,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             var worker = CreateWorker<WorkDoneProgress>(token, router, serializer, onError, onComplete, disposable);
             worker.OnNext(begin);
 
-            return new ProgressObserver<WorkDoneProgressReport>(token, worker,
+            return new ProgressObserver<WorkDoneProgressReport>(
+                token,
+                worker,
+                serializer,
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
         }
 
@@ -48,8 +53,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
 
             disposable.Add(
                 observer
-                    .Scan(new List<WorkDoneProgress>() {begin}, (acc, v) =>
-                    {
+                    .Scan(new List<WorkDoneProgress>() {begin}, (acc, v) => {
                         acc.Add(v);
                         return acc;
                     })
@@ -68,19 +72,26 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
                     .Subscribe(worker)
             );
 
-            return new ProgressObserver<WorkDoneProgressReport>(token, observer,
+            return new ProgressObserver<WorkDoneProgressReport>(
+                token,
+                observer,
+                serializer,
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
         }
 
         public static ProgressObserver<T> Create<T>(
-            ProgressToken token, IResponseRouter router,
+            ProgressToken token,
+            IResponseRouter router,
             ISerializer serializer,
             CancellationToken cancellationToken)
         {
             var observer = new Subject<WorkDoneProgress>();
             var disposable = new CompositeDisposable {observer};
 
-            return new ProgressObserver<T>(token, CreateWorker<T>(token, router, serializer, disposable),
+            return new ProgressObserver<T>(
+                token,
+                CreateWorker<T>(token, router, serializer, disposable),
+                serializer,
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
         }
 
@@ -94,8 +105,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
         {
             return Observer.Create<T>(
                 value => router.SendProgress(token.Create(value, serializer.JsonSerializer)),
-                error =>
-                {
+                error => {
                     if (onError != null)
                     {
                         router.SendProgress(token.Create(onError.Invoke(error), serializer.JsonSerializer));
@@ -103,8 +113,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
 
                     disposable.Dispose();
                 },
-                () =>
-                {
+                () => {
                     var result = onComplete();
                     if (result == null)
                     {
@@ -128,30 +137,42 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
                 error => { disposable.Dispose(); },
                 disposable.Dispose);
         }
+
+        public abstract void OnCompleted();
+
+        public abstract void OnError(Exception error);
+
+        public abstract void OnNext(JToken value);
+        public abstract void Dispose();
     }
 
-    public class ProgressObserver<T> : IDisposable, IObserver<T>
+    public class ProgressObserver<T> : ProgressObserver, IObserver<T>
     {
         public static ProgressObserver<T> Noop { get; } =
             new ProgressObserver<T>(new ProgressToken(Guid.Empty.ToString()),
-                Observer.Create<T>(x => { }), new CancellationTokenSource());
+                Observer.Create<T>(x => { }), Serializer.Instance, new CancellationTokenSource());
 
         private readonly IObserver<T> _currentObserver;
+        private readonly ISerializer _serializer;
         private readonly CancellationTokenSource _tokenSource;
 
-        internal ProgressObserver(ProgressToken progressToken, IObserver<T> observer,
+        internal ProgressObserver(
+            ProgressToken token,
+            IObserver<T> observer,
+            ISerializer serializer,
             CancellationTokenSource tokenSource)
         {
             _currentObserver = observer;
+            _serializer = serializer;
             _tokenSource = tokenSource;
-            ProgressToken = progressToken;
+            Token = token;
             CancellationToken = _tokenSource.Token;
         }
 
-        public ProgressToken ProgressToken { get; }
+        public ProgressToken Token { get; }
         public CancellationToken CancellationToken { get; }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (!_tokenSource.IsCancellationRequested)
             {
@@ -160,7 +181,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             }
         }
 
-        public void OnCompleted()
+        public override void OnCompleted()
         {
             if (!_tokenSource.IsCancellationRequested)
             {
@@ -169,7 +190,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             }
         }
 
-        public void OnError(Exception error)
+        public override void OnError(Exception error)
         {
             if (!_tokenSource.IsCancellationRequested)
             {
@@ -183,6 +204,14 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             if (!_tokenSource.IsCancellationRequested)
             {
                 _currentObserver.OnNext(value);
+            }
+        }
+
+        public override void OnNext(JToken value)
+        {
+            if (!_tokenSource.IsCancellationRequested)
+            {
+                _currentObserver.OnNext(value.ToObject<T>(_serializer.JsonSerializer));
             }
         }
     }

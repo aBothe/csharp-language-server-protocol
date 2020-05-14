@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using OmniSharp.Extensions.JsonRpc;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable CheckNamespace
 
@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.JsonRpc
     {
         public static IDisposable OnCancelRequest(this IJsonRpcHandlerRegistry registry, Func<CancelParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler));
+            return registry.AddHandler(JsonRpcNames.CancelRequest, _ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
         }
 
         class DelegatingHandler : CancelRequestHandler

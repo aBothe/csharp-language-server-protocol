@@ -1,29 +1,29 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Pipelines;
 using System.Reactive.Disposables;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageProtocolShared;
-using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Shared;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    public class LanguageServerOptions : ILanguageServerRegistry
+    public class LanguageServerOptions : ILanguageServerRegistry, IJsonRpcServerOptions
     {
         public LanguageServerOptions()
         {
         }
 
-        public ProgressManager ProgressManager { get; } = new ProgressManager();
-        public Stream Input { get; set; }
-        public Stream Output { get; set; }
+        public IWorkDoneProgressManager ProgressManager { get; } = new WorkDoneProgressManager();
+        public PipeReader Input { get; set; }
+        public PipeWriter Output { get; set; }
         public ServerInfo ServerInfo { get; set; }
         public ISerializer Serializer { get; set; } = Protocol.Serialization.Serializer.Instance;
         public IRequestProcessIdentifier RequestProcessIdentifier { get; set; } = new RequestProcessIdentifier();
@@ -66,6 +66,12 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public IDisposable AddHandler<T>() where T : IJsonRpcHandler
         {
             HandlerTypes.Add(typeof(T));
+            return Disposable.Empty;
+        }
+
+        public IDisposable AddHandler<T>(Func<IServiceProvider, T> handlerFunc) where T : IJsonRpcHandler
+        {
+            NamedServiceHandlers.Add((HandlerTypeHelper.GetMethodName<T>(), _ => handlerFunc(_)));
             return Disposable.Empty;
         }
 

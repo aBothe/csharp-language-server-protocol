@@ -2,13 +2,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     public interface ITextDocumentSyncHandler : IDidChangeTextDocumentHandler, IDidOpenTextDocumentHandler, IDidCloseTextDocumentHandler, IDidSaveTextDocumentHandler, ITextDocumentIdentifier
     {
@@ -55,6 +58,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Action<SynchronizationCapability> setCapability = null)
         {
             registrationOptions ??= new TextDocumentSaveRegistrationOptions();
+            setCapability ??= x => { };
             return registry.AddHandlers(new DelegatingHandler(onOpenHandler, onCloseHandler, onChangeHandler, onSaveHandler, getTextDocumentAttributes, setCapability, registrationOptions, kind));
         }
 

@@ -1,15 +1,16 @@
-using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     public static class PublishDiagnosticsExtensions
     {
-        public static void PublishDiagnostics(this ILanguageServerDocument mediator, PublishDiagnosticsParams @params)
+        public static void PublishDiagnostics(this ITextDocumentLanguageServer mediator, PublishDiagnosticsParams @params)
         {
-            mediator.SendNotification(DocumentNames.PublishDiagnostics, @params);
+            mediator.SendNotification(TextDocumentNames.PublishDiagnostics, @params);
         }
     }
 }

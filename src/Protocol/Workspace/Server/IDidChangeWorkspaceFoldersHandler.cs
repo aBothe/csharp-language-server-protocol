@@ -1,14 +1,17 @@
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using System.Threading.Tasks;
 using MediatR;
 using System.Threading;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
 
-namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
+namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Parallel, Method(WorkspaceNames.DidChangeWorkspaceFolders)]
     public interface IDidChangeWorkspaceFoldersHandler : IJsonRpcNotificationHandler<DidChangeWorkspaceFoldersParams>, ICapability<DidChangeWorkspaceFolderCapability>, IRegistration<object> { }
@@ -28,7 +31,8 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Server
             Func<DidChangeWorkspaceFoldersParams, CancellationToken, Task<Unit>> handler,
             Action<DidChangeWorkspaceFolderCapability> setCapability = null)
         {
-            return registry.AddHandlers(new DelegatingHandler(handler, setCapability));
+            setCapability ??= x => { };
+            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability));
         }
 
         class DelegatingHandler : DidChangeWorkspaceFoldersHandler

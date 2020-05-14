@@ -1,12 +1,14 @@
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nerdbank.Streams;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageProtocolShared;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Shared;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
@@ -15,13 +17,31 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static LanguageServerOptions WithInput(this LanguageServerOptions options, Stream input)
         {
+            options.Input = input.UsePipeReader();
+            return options;
+        }
+        public static LanguageServerOptions WithInput(this LanguageServerOptions options, PipeReader input)
+        {
             options.Input = input;
             return options;
         }
 
         public static LanguageServerOptions WithOutput(this LanguageServerOptions options, Stream output)
         {
+            options.Output = output.UsePipeWriter();
+            return options;
+        }
+
+        public static LanguageServerOptions WithOutput(this LanguageServerOptions options, PipeWriter output)
+        {
             options.Output = output;
+            return options;
+        }
+
+        public static LanguageServerOptions WithPipe(this LanguageServerOptions options, Pipe pipe)
+        {
+            options.Input = pipe.Reader;
+            options.Output = pipe.Writer;
             return options;
         }
 

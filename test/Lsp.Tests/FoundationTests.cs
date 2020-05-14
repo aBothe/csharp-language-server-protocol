@@ -5,7 +5,7 @@ using FluentAssertions;
 using MediatR;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Server;
 using Xunit;
 
 namespace Lsp.Tests

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Newtonsoft.Json.Linq;
@@ -6,11 +7,18 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol
 {
-    public abstract class ClientProxyBase : IResponseRouter
+    public interface IClientProxy : IResponseRouter, IServiceProvider
+    {
+    }
+
+    public abstract class ClientProxyBase : IClientProxy
     {
         private readonly IResponseRouter _responseRouter;
-        public ClientProxyBase(IResponseRouter responseRouter)
+        private readonly IServiceProvider _serviceProvider;
+
+        public ClientProxyBase(IResponseRouter responseRouter, IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _responseRouter = responseRouter;
         }
 
@@ -27,5 +35,6 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
         public Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken) => _responseRouter.SendRequest(request, cancellationToken);
 
         public TaskCompletionSource<JToken> GetRequest(long id) => _responseRouter.GetRequest(id);
+        object IServiceProvider.GetService(Type serviceType) => _serviceProvider.GetService(serviceType);
     }
 }
