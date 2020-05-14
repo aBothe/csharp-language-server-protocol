@@ -117,13 +117,22 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             _rootUri = options.RootUri;
             _trace = options.Trace;
             _initializationOptions = options.InitializationOptions;
+
+
             var registrationManager = new RegistrationManager(_serializer);
             _registrationManager = registrationManager;
-            services.AddSingleton<IJsonRpcHandler>(registrationManager);
+            if (options.DynamicRegistration)
+            {
+                services.AddSingleton<IJsonRpcHandler>(registrationManager);
+            }
 
             var workspaceFoldersManager = new WorkspaceFoldersManager(this);
+                workspaceFoldersManager.Add(options.Folders);
             _workspaceFoldersManager = workspaceFoldersManager;
-            services.AddSingleton<IJsonRpcHandler>(workspaceFoldersManager);
+            if (options.WorkspaceFolders)
+            {
+                services.AddSingleton<IJsonRpcHandler>(workspaceFoldersManager);
+            }
 
             services.AddSingleton<IOutputHandler>(_ =>
                 new OutputHandler(options.Output, options.Serializer, _.GetService<ILogger<OutputHandler>>()));
@@ -359,7 +368,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
                 : _capabilities.OfType<T>().FirstOrDefault();
             if (value is IDynamicCapability dynamicCapability)
             {
-                dynamicCapability.DynamicRegistration = true;
+                dynamicCapability.DynamicRegistration = _collection.ContainsHandler(typeof(IRegisterCapabilityHandler));
             }
             return value;
         }

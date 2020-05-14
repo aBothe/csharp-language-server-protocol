@@ -119,7 +119,8 @@ namespace Lsp.Tests.Integration
         {
             var (client, server) = await Initialize(ConfigureClient, ConfigureServer);
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+            await Task.Delay(1000);
 
             client.RegistrationManager.Registrations.Items.Should().Contain(x =>
                 x.Method == TextDocumentNames.Completion &&
@@ -133,7 +134,8 @@ namespace Lsp.Tests.Integration
         {
             var (client, server) = await Initialize(ConfigureClient, ConfigureServer);
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+            await Task.Delay(1000);
 
             server.OnCompletion(
                 (@params, token) => Task.FromResult(new CompletionList()),
@@ -141,7 +143,8 @@ namespace Lsp.Tests.Integration
                     DocumentSelector = DocumentSelector.ForLanguage("vb")
                 });
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+            await Task.Delay(1000);
 
             client.RegistrationManager.Registrations.Items.Should().Contain(x =>
                 x.Method == TextDocumentNames.Completion &&
@@ -155,7 +158,8 @@ namespace Lsp.Tests.Integration
         {
             var (client, server) = await Initialize(ConfigureClient, ConfigureServer);
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+            await Task.Delay(1000);
 
             var disposable = server.OnCompletion(
                 (@params, token) => Task.FromResult(new CompletionList()),
@@ -163,11 +167,13 @@ namespace Lsp.Tests.Integration
                     DocumentSelector = DocumentSelector.ForLanguage("vb")
                 });
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+            await Task.Delay(1000);
 
             disposable.Dispose();
 
-            await WaitForUpdate(client.RegistrationManager.Registrations);
+            // await WaitForUpdate(client.RegistrationManager.Registrations);
+                        await Task.Delay(1000);
 
             client.RegistrationManager.Registrations.Items.Should().NotContain(x =>
                 x.Method == TextDocumentNames.Completion &&

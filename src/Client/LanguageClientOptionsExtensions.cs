@@ -200,5 +200,41 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             options.ConfigurationBuilderAction = builderAction;
             return options;
         }
+
+        public static LanguageClientOptions EnableWorkspaceFolders(this LanguageClientOptions options)
+        {
+            options.WorkspaceFolders = true;
+            return options;
+        }
+
+        public static LanguageClientOptions DisableWorkspaceFolders(this LanguageClientOptions options)
+        {
+            options.WorkspaceFolders = false;
+            return options;
+        }
+
+        public static LanguageClientOptions EnableDynamicRegistration(this LanguageClientOptions options)
+        {
+            options.DynamicRegistration = true;
+            return options;
+        }
+
+        public static LanguageClientOptions DisableDynamicRegistration(this LanguageClientOptions options)
+        {
+            options.DynamicRegistration = false;
+            return options;
+        }
+
+        public static LanguageClientOptions EnableProgressTokens(this LanguageClientOptions options)
+        {
+            options.ProgressTokens = true;
+            return options;
+        }
+
+        public static LanguageClientOptions DisableProgressTokens(this LanguageClientOptions options)
+        {
+            options.ProgressTokens = false;
+            return options;
+        }
     }
 }

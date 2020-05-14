@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -25,7 +26,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public PipeReader Input { get; set; }
         public PipeWriter Output { get; set; }
         public ServerInfo ServerInfo { get; set; }
-        public ISerializer Serializer { get; set; } = Protocol.Serialization.Serializer.Instance;
+        public ISerializer Serializer { get; set; } = new Protocol.Serialization.Serializer(ClientVersion.Lsp3);
         public IRequestProcessIdentifier RequestProcessIdentifier { get; set; } = new RequestProcessIdentifier();
         public ILspServerReceiver Receiver { get; set; } = new LspServerReceiver();
         public IServiceCollection Services { get; set; } = new ServiceCollection();

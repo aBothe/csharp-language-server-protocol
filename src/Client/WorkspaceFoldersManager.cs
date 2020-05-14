@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +49,11 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public void Add(DocumentUri uri, string name)
         {
             Add(new WorkspaceFolder() {Name = name, Uri = uri});
+        }
+
+        public void Add(IEnumerable<WorkspaceFolder> workspaceFolders)
+        {
+            _workspaceFolders.AddOrUpdate(workspaceFolders);
         }
 
         public void Add(params WorkspaceFolder[] workspaceFolders)

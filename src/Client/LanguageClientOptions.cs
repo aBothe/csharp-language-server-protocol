@@ -37,6 +37,9 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public PipeWriter Output { get; set; }
         public ClientInfo ClientInfo { get; set; }
         public DocumentUri RootUri { get; set; }
+        public bool WorkspaceFolders { get; set; } = true;
+        public bool DynamicRegistration { get; set; } = true;
+        public bool ProgressTokens { get; set; } = true;
 
         public string RootPath
         {
@@ -48,13 +51,12 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public object InitializationOptions { get; set; }
 
-        public ISerializer Serializer { get; set; } =
-            OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Serializer.Instance;
+        public ISerializer Serializer { get; set; } = new Protocol.Serialization.Serializer(ClientVersion.Lsp3);
 
         public IRequestProcessIdentifier RequestProcessIdentifier { get; set; } = new RequestProcessIdentifier();
         public ILspClientReceiver Receiver { get; set; } = new LspClientReceiver();
         public IServiceCollection Services { get; set; } = new ServiceCollection();
-        internal List<WorkspaceFolder> WorkspaceFolders { get; set; } = new List<WorkspaceFolder>();
+        internal List<WorkspaceFolder> Folders { get; set; } = new List<WorkspaceFolder>();
         internal List<IJsonRpcHandler> Handlers { get; set; } = new List<IJsonRpcHandler>();
 
         internal List<ITextDocumentIdentifier> TextDocumentIdentifiers { get; set; } =
