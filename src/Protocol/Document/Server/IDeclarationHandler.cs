@@ -35,32 +35,101 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDeclaration(
             this ILanguageServerRegistry registry,
-            Func<DeclarationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-            DeclarationRegistrationOptions registrationOptions = null,
-            Action<DeclarationCapability> setCapability = null)
+            Func<DeclarationParams, DeclarationCapability, CancellationToken, Task<LocationOrLocationLinks>>
+                handler,
+            DeclarationRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DeclarationRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                new LanguageProtocolDelegatingHandlers.Request<DeclarationParams, LocationOrLocationLinks, DeclarationCapability,
+                    DeclarationRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DeclarationHandler
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Func<DeclarationParams, DeclarationCapability, Task<LocationOrLocationLinks>> handler,
+            DeclarationRegistrationOptions registrationOptions)
         {
-            private readonly Func<DeclarationParams, CancellationToken, Task<LocationOrLocationLinks>> _handler;
-            private readonly Action<DeclarationCapability> _setCapability;
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                new LanguageProtocolDelegatingHandlers.Request<DeclarationParams, LocationOrLocationLinks, DeclarationCapability,
+                    DeclarationRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DeclarationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<DeclarationCapability> setCapability,
-                DeclarationRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Func<DeclarationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DeclarationParams, LocationOrLocationLinks,
+                    DeclarationRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<LocationOrLocationLinks> Handle(DeclarationParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DeclarationCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Func<DeclarationParams, Task<LocationOrLocationLinks>> handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DeclarationParams, LocationOrLocationLinks,
+                    DeclarationRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Action<DeclarationParams, IObserver<Container<LocationLink>>, DeclarationCapability,
+                CancellationToken> handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DeclarationParams, LocationOrLocationLinks,
+                        LocationLink, DeclarationCapability, DeclarationRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Action<DeclarationParams, IObserver<Container<LocationLink>>, DeclarationCapability>
+                handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DeclarationParams, LocationOrLocationLinks,
+                        LocationLink, DeclarationCapability, DeclarationRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Action<DeclarationParams, IObserver<Container<LocationLink>>, CancellationToken> handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DeclarationParams, LocationOrLocationLinks,
+                        LocationLink, DeclarationRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDeclaration(
+            this ILanguageServerRegistry registry,
+            Action<DeclarationParams, IObserver<Container<LocationLink>>> handler,
+            DeclarationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DeclarationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Declaration,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DeclarationParams, LocationOrLocationLinks,
+                        LocationLink, DeclarationRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

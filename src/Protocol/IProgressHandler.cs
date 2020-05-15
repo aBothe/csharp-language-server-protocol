@@ -11,7 +11,9 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Protocol
 {
     [Parallel, Method(GeneralNames.Progress)]
-    public interface IProgressHandler : IJsonRpcNotificationHandler<ProgressParams> { }
+    public interface IProgressHandler : IJsonRpcNotificationHandler<ProgressParams>
+    {
+    }
 
     public abstract class ProgressHandler : IProgressHandler
     {
@@ -22,29 +24,30 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
     {
         public static IDisposable OnProgress(
             this ILanguageServerRegistry registry,
-            Func<ProgressParams, CancellationToken, Task<Unit>> handler)
+            Action<WillSaveTextDocumentParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(GeneralNames.Progress, NotificationHandler.For(handler));
         }
+
+        public static IDisposable OnProgress(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveTextDocumentParams, Task> handler)
+        {
+            return registry.AddHandler(GeneralNames.Progress, NotificationHandler.For(handler));
+        }
+
         public static IDisposable OnProgress(
             this ILanguageClientRegistry registry,
-            Func<ProgressParams, CancellationToken, Task<Unit>> handler)
+            Action<WillSaveTextDocumentParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(GeneralNames.Progress, NotificationHandler.For(handler));
         }
 
-        class DelegatingHandler : ProgressHandler
+        public static IDisposable OnProgress(
+            this ILanguageClientRegistry registry,
+            Func<WillSaveTextDocumentParams, Task> handler)
         {
-            private readonly Func<ProgressParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(
-                Func<ProgressParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(ProgressParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-
+            return registry.AddHandler(GeneralNames.Progress, NotificationHandler.For(handler));
         }
     }
 }

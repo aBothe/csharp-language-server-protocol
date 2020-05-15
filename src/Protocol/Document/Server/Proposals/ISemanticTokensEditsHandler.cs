@@ -89,11 +89,12 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     {
         public static IDisposable OnSemanticTokensEdits(
             this ILanguageServerRegistry registry,
-            Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, CancellationToken, Task> tokenize,
-            Func<ITextDocumentIdentifierParams, CancellationToken, Task<SemanticTokensDocument>>
+            Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken, Task
+            > tokenize,
+            Func<ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken,
+                    Task<SemanticTokensDocument>>
                 getSemanticTokensDocument,
-            SemanticTokensRegistrationOptions registrationOptions = null,
-            Action<SemanticTokensCapability> setCapability = null)
+            SemanticTokensRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new SemanticTokensRegistrationOptions() {
                 DocumentProvider =
@@ -105,44 +106,110 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
             {
                 registrationOptions.DocumentProvider.Edits = true;
             }
-            setCapability ??= x => { };
 
             return registry.AddHandlers(
-                new DelegatingHandler(tokenize, getSemanticTokensDocument, setCapability, registrationOptions));
+                new DelegatingHandler(tokenize, getSemanticTokensDocument, registrationOptions));
+        }
+
+        public static IDisposable OnSemanticTokensEdits(
+            this ILanguageServerRegistry registry,
+            Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, CancellationToken, Task
+            > tokenize,
+            Func<ITextDocumentIdentifierParams, CancellationToken,
+                    Task<SemanticTokensDocument>>
+                getSemanticTokensDocument,
+            SemanticTokensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new SemanticTokensRegistrationOptions() {
+                DocumentProvider =
+                    new Supports<SemanticTokensDocumentProviderOptions>(true,
+                        new SemanticTokensDocumentProviderOptions() { })
+            };
+            registrationOptions.RangeProvider = true;
+            if (registrationOptions.DocumentProvider != null)
+            {
+                registrationOptions.DocumentProvider.Edits = true;
+            }
+
+            return registry.AddHandlers(
+                new DelegatingHandler(
+                    (a, t, c, ct) => tokenize(a, t, ct),
+                    (a, c, ct) => getSemanticTokensDocument(a, ct),
+                    registrationOptions));
+        }
+
+        public static IDisposable OnSemanticTokensEdits(
+            this ILanguageServerRegistry registry,
+            Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, Task
+            > tokenize,
+            Func<ITextDocumentIdentifierParams,
+                    Task<SemanticTokensDocument>>
+                getSemanticTokensDocument,
+            SemanticTokensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new SemanticTokensRegistrationOptions() {
+                DocumentProvider =
+                    new Supports<SemanticTokensDocumentProviderOptions>(true,
+                        new SemanticTokensDocumentProviderOptions() { })
+            };
+            registrationOptions.RangeProvider = true;
+            if (registrationOptions.DocumentProvider != null)
+            {
+                registrationOptions.DocumentProvider.Edits = true;
+            }
+
+            return registry.AddHandlers(
+                new DelegatingHandler(
+                    (a, t, c, ct) => tokenize(a, t),
+                    (a, c, ct) => getSemanticTokensDocument(a),
+                    registrationOptions));
         }
 
         class DelegatingHandler : SemanticTokensHandler
         {
-            private readonly Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, CancellationToken, Task>
+            private readonly Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, SemanticTokensCapability,
+                    CancellationToken, Task>
                 _tokenize;
 
-            private readonly Func<ITextDocumentIdentifierParams, CancellationToken, Task<SemanticTokensDocument>>
+            private readonly Func<ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken,
+                    Task<SemanticTokensDocument>>
                 _getSemanticTokensDocument;
 
-            private readonly Action<SemanticTokensCapability> _setCapability;
+            private SemanticTokensCapability _capability;
 
             public DelegatingHandler(
-                Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, CancellationToken, Task> tokenize,
-                Func<ITextDocumentIdentifierParams, CancellationToken, Task<SemanticTokensDocument>>
+                Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken,
+                    Task> tokenize,
+                Func<ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken,
+                        Task<SemanticTokensDocument>>
                     getSemanticTokensDocument,
-                Action<SemanticTokensCapability> setCapability,
                 SemanticTokensRegistrationOptions registrationOptions) : base(registrationOptions)
             {
                 _tokenize = tokenize;
                 _getSemanticTokensDocument = getSemanticTokensDocument;
-                _setCapability = setCapability;
+            }
+
+            public DelegatingHandler(
+                Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, SemanticTokensCapability, Task> tokenize,
+                Func<ITextDocumentIdentifierParams, SemanticTokensCapability, Task<SemanticTokensDocument>>
+                    getSemanticTokensDocument,
+                SemanticTokensRegistrationOptions registrationOptions) : this(
+                (s, t, c, ct) => tokenize(s, t, c),
+                (t, c, ct) => getSemanticTokensDocument(t, c),
+                registrationOptions
+            )
+            {
             }
 
             protected override Task Tokenize(SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier,
                 CancellationToken cancellationToken) =>
-                _tokenize(builder, identifier, cancellationToken);
+                _tokenize(builder, identifier, _capability, cancellationToken);
 
             protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(
                 ITextDocumentIdentifierParams @params, CancellationToken cancellationToken) =>
-                _getSemanticTokensDocument(@params, cancellationToken);
+                _getSemanticTokensDocument(@params, _capability, cancellationToken);
 
-            public override void SetCapability(SemanticTokensCapability capability) =>
-                _setCapability?.Invoke(capability);
+            public override void SetCapability(SemanticTokensCapability capability) => _capability = capability;
         }
     }
 }

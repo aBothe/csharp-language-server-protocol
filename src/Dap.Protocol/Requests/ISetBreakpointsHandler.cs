@@ -7,30 +7,28 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.SetBreakpoints)]
-    public interface ISetBreakpointsHandler : IJsonRpcRequestHandler<SetBreakpointsArguments, SetBreakpointsResponse> { }
+    public interface ISetBreakpointsHandler : IJsonRpcRequestHandler<SetBreakpointsArguments, SetBreakpointsResponse>
+    {
+    }
 
     public abstract class SetBreakpointsHandler : ISetBreakpointsHandler
     {
-        public abstract Task<SetBreakpointsResponse> Handle(SetBreakpointsArguments request, CancellationToken cancellationToken);
+        public abstract Task<SetBreakpointsResponse> Handle(SetBreakpointsArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class SetBreakpointsHandlerExtensions
     {
-        public static IDisposable OnSetBreakpoints(this IDebugAdapterRegistry registry, Func<SetBreakpointsArguments, CancellationToken, Task<SetBreakpointsResponse>> handler)
+        public static IDisposable OnSetBreakpoints(this IDebugAdapterRegistry registry,
+            Func<SetBreakpointsArguments, CancellationToken, Task<SetBreakpointsResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.SetBreakpoints, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : SetBreakpointsHandler
+        public static IDisposable OnSetBreakpoints(this IDebugAdapterRegistry registry,
+            Func<SetBreakpointsArguments, Task<SetBreakpointsResponse>> handler)
         {
-            private readonly Func<SetBreakpointsArguments, CancellationToken, Task<SetBreakpointsResponse>> _handler;
-
-            public DelegatingHandler(Func<SetBreakpointsArguments, CancellationToken, Task<SetBreakpointsResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<SetBreakpointsResponse> Handle(SetBreakpointsArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.SetBreakpoints, RequestHandler.For(handler));
         }
     }
 }

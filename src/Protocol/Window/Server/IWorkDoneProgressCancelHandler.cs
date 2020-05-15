@@ -22,28 +22,16 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Window.Server
     {
         public static IDisposable OnWorkDoneProgressCancel(
             this ILanguageServerRegistry registry,
-            Func<WorkDoneProgressCancelParams, CancellationToken, Task<Unit>> handler)
+            Action<WorkDoneProgressCancelParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.WorkDoneProgressCancel, NotificationHandler.For(handler));
         }
+
         public static IDisposable OnWorkDoneProgressCancel(
-            this ILanguageClientRegistry registry,
-            Func<WorkDoneProgressCancelParams, CancellationToken, Task<Unit>> handler)
+            this ILanguageServerRegistry registry,
+            Func<WorkDoneProgressCancelParams, Task> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
-        }
-
-        class DelegatingHandler : WorkDoneProgressCancelHandler
-        {
-            private readonly Func<WorkDoneProgressCancelParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(
-                Func<WorkDoneProgressCancelParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(WorkDoneProgressCancelParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(WindowNames.WorkDoneProgressCancel, NotificationHandler.For(handler));
         }
     }
 }

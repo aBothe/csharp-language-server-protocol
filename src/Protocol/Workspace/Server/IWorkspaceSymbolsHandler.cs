@@ -35,32 +35,47 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnWorkspaceSymbols(
             this ILanguageServerRegistry registry,
-            Func<WorkspaceSymbolParams, CancellationToken, Task<Container<SymbolInformation>>> handler,
-            Action<WorkspaceSymbolCapability> setCapability = null,
-            WorkspaceSymbolRegistrationOptions registrationOptions = null)
+            Func<WorkspaceSymbolParams, WorkspaceSymbolCapability, CancellationToken, Task<Container<SymbolInformation>>>
+                handler,
+            WorkspaceSymbolRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new WorkspaceSymbolRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(WorkspaceNames.WorkspaceSymbol,
+                new LanguageProtocolDelegatingHandlers.Request<WorkspaceSymbolParams, Container<SymbolInformation>, WorkspaceSymbolCapability,
+                    WorkspaceSymbolRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : WorkspaceSymbolsHandler
+        public static IDisposable OnWorkspaceSymbols(
+            this ILanguageServerRegistry registry,
+            Func<WorkspaceSymbolParams, WorkspaceSymbolCapability, Task<Container<SymbolInformation>>> handler,
+            WorkspaceSymbolRegistrationOptions registrationOptions)
         {
-            private readonly Func<WorkspaceSymbolParams, CancellationToken, Task<Container<SymbolInformation>>> _handler;
-            private readonly Action<WorkspaceSymbolCapability> _setCapability;
+            registrationOptions ??= new WorkspaceSymbolRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.WorkspaceSymbol,
+                new LanguageProtocolDelegatingHandlers.Request<WorkspaceSymbolParams, Container<SymbolInformation>, WorkspaceSymbolCapability,
+                    WorkspaceSymbolRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<WorkspaceSymbolParams, CancellationToken, Task<Container<SymbolInformation>>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<WorkspaceSymbolCapability> setCapability,
-                WorkspaceSymbolRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnWorkspaceSymbols(
+            this ILanguageServerRegistry registry,
+            Func<WorkspaceSymbolParams, CancellationToken, Task<Container<SymbolInformation>>> handler,
+            WorkspaceSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new WorkspaceSymbolRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.WorkspaceSymbol,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<WorkspaceSymbolParams, Container<SymbolInformation>,
+                    WorkspaceSymbolRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<Container<SymbolInformation>> Handle(WorkspaceSymbolParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(WorkspaceSymbolCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnWorkspaceSymbols(
+            this ILanguageServerRegistry registry,
+            Func<WorkspaceSymbolParams, Task<Container<SymbolInformation>>> handler,
+            WorkspaceSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new WorkspaceSymbolRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.WorkspaceSymbol,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<WorkspaceSymbolParams, Container<SymbolInformation>,
+                    WorkspaceSymbolRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

@@ -22,21 +22,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class UnregisterCapabilityHandlerExtensions
     {
-        public static IDisposable OnUnregisterCapability(this ILanguageClientRegistry registry, Func<UnregistrationParams, CancellationToken, Task<Unit>> handler)
+        public static IDisposable OnUnregisterCapability(this ILanguageClientRegistry registry,
+            Func<UnregistrationParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(ClientNames.UnregisterCapability, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : UnregisterCapabilityHandler
+        public static IDisposable OnUnregisterCapability(this ILanguageClientRegistry registry,
+            Func<UnregistrationParams, Task<Unit>> handler)
         {
-            private readonly Func<UnregistrationParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<UnregistrationParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(UnregistrationParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(ClientNames.UnregisterCapability, RequestHandler.For(handler));
         }
     }
 }

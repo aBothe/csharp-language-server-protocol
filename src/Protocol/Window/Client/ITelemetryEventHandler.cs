@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 // ReSharper disable CheckNamespace
@@ -22,22 +23,17 @@ namespace OmniSharp.Extensions.LanguageServer.Client
     public static class TelemetryEventHandlerExtensions
     {
         public static IDisposable OnTelemetryEvent(
-            this ILanguageServerRegistry registry,
-            Func<TelemetryEventParams, CancellationToken, Task<Unit>> handler)
+            this ILanguageClientRegistry registry,
+            Action<TelemetryEventParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.TelemetryEvent, NotificationHandler.For(handler));
         }
 
-        class DelegatingHandler : TelemetryEventHandler
+        public static IDisposable OnTelemetryEvent(
+            this ILanguageClientRegistry registry,
+            Func<TelemetryEventParams, Task> handler)
         {
-            private readonly Func<TelemetryEventParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<TelemetryEventParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(TelemetryEventParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(WindowNames.TelemetryEvent, NotificationHandler.For(handler));
         }
     }
 }

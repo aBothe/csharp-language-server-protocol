@@ -1,6 +1,9 @@
 using System;
+using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -18,62 +21,104 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
     }
 
-    public abstract class ImplementationHandler : IImplementationHandler
+    public abstract class ImplementationHandler :
+        AbstractHandlers.Request<ImplementationParams, LocationOrLocationLinks, ImplementationCapability,
+            ImplementationRegistrationOptions>, IImplementationHandler
     {
-        private readonly ImplementationRegistrationOptions _options;
-        protected IWorkDoneProgressManager ProgressManager { get; }
-
-        public ImplementationHandler(ImplementationRegistrationOptions registrationOptions,
-            IWorkDoneProgressManager progressManager)
+        protected ImplementationHandler(ImplementationRegistrationOptions registrationOptions) : base(
+            registrationOptions)
         {
-            _options = registrationOptions;
-            ProgressManager = progressManager;
         }
-
-        public ImplementationRegistrationOptions GetRegistrationOptions() => _options;
-
-        public abstract Task<LocationOrLocationLinks> Handle(ImplementationParams request,
-            CancellationToken cancellationToken);
-
-        public virtual void SetCapability(ImplementationCapability capability) => Capability = capability;
-        protected ImplementationCapability Capability { get; private set; }
     }
 
     public static class ImplementationHandlerExtensions
     {
         public static IDisposable OnImplementation(
             this ILanguageServerRegistry registry,
-            Func<ImplementationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-            ImplementationRegistrationOptions registrationOptions = null,
-            Action<ImplementationCapability> setCapability = null)
+            Func<ImplementationParams, ImplementationCapability, CancellationToken, Task<LocationOrLocationLinks>>
+                handler,
+            ImplementationRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new ImplementationRegistrationOptions();
-            setCapability ??= x => { };
             return registry.AddHandler(TextDocumentNames.Implementation,
-                _ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability,
-                    registrationOptions));
+                new LanguageProtocolDelegatingHandlers.Request<ImplementationParams, LocationOrLocationLinks, ImplementationCapability,
+                    ImplementationRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : ImplementationHandler
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Func<ImplementationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
+            ImplementationRegistrationOptions registrationOptions)
         {
-            private readonly Func<ImplementationParams, CancellationToken, Task<LocationOrLocationLinks>> _handler;
-            private readonly Action<ImplementationCapability> _setCapability;
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ImplementationParams, LocationOrLocationLinks,
+                    ImplementationRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<ImplementationParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<ImplementationCapability> setCapability,
-                ImplementationRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Func<ImplementationParams, Task<LocationOrLocationLinks>> handler,
+            ImplementationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ImplementationParams, LocationOrLocationLinks,
+                    ImplementationRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<LocationOrLocationLinks> Handle(ImplementationParams request,
-                CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Action<ImplementationParams, IObserver<Container<LocationOrLocationLink>>, ImplementationCapability,
+                CancellationToken> handler,
+            ImplementationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ImplementationParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, ImplementationCapability, ImplementationRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
 
-            public override void SetCapability(ImplementationCapability capability) =>
-                _setCapability?.Invoke(capability);
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Action<ImplementationParams, IObserver<Container<LocationOrLocationLink>>, ImplementationCapability>
+                handler,
+            ImplementationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ImplementationParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, ImplementationCapability, ImplementationRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Action<ImplementationParams, IObserver<Container<LocationOrLocationLink>>, CancellationToken> handler,
+            ImplementationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ImplementationParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, ImplementationRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnImplementation(
+            this ILanguageServerRegistry registry,
+            Action<ImplementationParams, IObserver<Container<LocationOrLocationLink>>> handler,
+            ImplementationRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ImplementationRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ImplementationParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, ImplementationRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

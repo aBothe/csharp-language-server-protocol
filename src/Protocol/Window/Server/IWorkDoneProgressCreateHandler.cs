@@ -21,30 +21,18 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Window.Server
     public static class WorkDoneProgressCreateHandlerExtensions
     {
         public static IDisposable OnWorkDoneProgressCreate(
-            this ILanguageServerRegistry registry,
-            Func<WorkDoneProgressCreateParams, CancellationToken, Task<Unit>> handler)
+            this ILanguageClientRegistry registry,
+            Func<WorkDoneProgressCreateParams, CancellationToken, Task>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.WorkDoneProgressCreate,                 RequestHandler.For(handler));
         }
         public static IDisposable OnWorkDoneProgressCreate(
             this ILanguageClientRegistry registry,
-            Func<WorkDoneProgressCreateParams, CancellationToken, Task<Unit>> handler)
+            Func<WorkDoneProgressCreateParams, Task>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
-        }
-
-        class DelegatingHandler : WorkDoneProgressCreateHandler
-        {
-            private readonly Func<WorkDoneProgressCreateParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(
-                Func<WorkDoneProgressCreateParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(WorkDoneProgressCreateParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-
+            return registry.AddHandler(WindowNames.WorkDoneProgressCreate,                 RequestHandler.For(handler));
         }
     }
 }

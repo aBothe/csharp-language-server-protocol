@@ -28,29 +28,24 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDidChangeWorkspaceFolders(
             this ILanguageServerRegistry registry,
-            Func<DidChangeWorkspaceFoldersParams, CancellationToken, Task<Unit>> handler,
-            Action<DidChangeWorkspaceFolderCapability> setCapability = null)
+            Action<DidChangeWorkspaceFoldersParams, SynchronizationCapability> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability));
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWorkspaceFolders,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWorkspaceFoldersParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DidChangeWorkspaceFoldersHandler
+        public static IDisposable OnDidChangeWorkspaceFolders(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeWorkspaceFoldersParams> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            private readonly Func<DidChangeWorkspaceFoldersParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<DidChangeWorkspaceFolderCapability> _setCapability;
-
-            public DelegatingHandler(
-                Func<DidChangeWorkspaceFoldersParams, CancellationToken, Task<Unit>> handler,
-                Action<DidChangeWorkspaceFolderCapability> setCapability) : base()
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Unit> Handle(DidChangeWorkspaceFoldersParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DidChangeWorkspaceFolderCapability capability) => _setCapability?.Invoke(capability);
-
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWorkspaceFolders,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWorkspaceFoldersParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

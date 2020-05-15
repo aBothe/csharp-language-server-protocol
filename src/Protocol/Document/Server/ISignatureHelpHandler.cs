@@ -33,32 +33,36 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnSignatureHelp(
             this ILanguageServerRegistry registry,
-            Func<SignatureHelpParams, CancellationToken, Task<SignatureHelp>> handler,
-            SignatureHelpRegistrationOptions registrationOptions = null,
-            Action<SignatureHelpCapability> setCapability = null)
+            Func<SignatureHelpParams, SignatureHelpCapability, CancellationToken, Task<SignatureHelp>>
+                handler,
+            SignatureHelpRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new SignatureHelpRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.SignatureHelp,
+                new LanguageProtocolDelegatingHandlers.Request<SignatureHelpParams, SignatureHelp, SignatureHelpCapability,
+                    SignatureHelpRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : SignatureHelpHandler
+        public static IDisposable OnSignatureHelp(
+            this ILanguageServerRegistry registry,
+            Func<SignatureHelpParams, CancellationToken, Task<SignatureHelp>> handler,
+            SignatureHelpRegistrationOptions registrationOptions)
         {
-            private readonly Func<SignatureHelpParams, CancellationToken, Task<SignatureHelp>> _handler;
-            private readonly Action<SignatureHelpCapability> _setCapability;
+            registrationOptions ??= new SignatureHelpRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.SignatureHelp,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<SignatureHelpParams, SignatureHelp,
+                    SignatureHelpRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<SignatureHelpParams, CancellationToken, Task<SignatureHelp>> handler,
-                Action<SignatureHelpCapability> setCapability,
-                SignatureHelpRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<SignatureHelp> Handle(SignatureHelpParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(SignatureHelpCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnSignatureHelp(
+            this ILanguageServerRegistry registry,
+            Func<SignatureHelpParams, Task<SignatureHelp>> handler,
+            SignatureHelpRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new SignatureHelpRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.SignatureHelp,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<SignatureHelpParams, SignatureHelp,
+                    SignatureHelpRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

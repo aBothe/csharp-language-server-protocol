@@ -35,32 +35,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnReferences(
             this ILanguageServerRegistry registry,
-            Func<ReferenceParams, CancellationToken, Task<LocationContainer>> handler,
-            ReferenceRegistrationOptions registrationOptions = null,
-            Action<ReferenceCapability> setCapability = null)
+            Func<ReferenceParams, ReferenceCapability, CancellationToken, Task<LocationContainer>>
+                handler,
+            ReferenceRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new ReferenceRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.References,
+                new LanguageProtocolDelegatingHandlers.Request<ReferenceParams, LocationContainer, ReferenceCapability,
+                    ReferenceRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : ReferencesHandler
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Func<ReferenceParams, CancellationToken, Task<LocationContainer>> handler,
+            ReferenceRegistrationOptions registrationOptions)
         {
-            private readonly Func<ReferenceParams, CancellationToken, Task<LocationContainer>> _handler;
-            private readonly Action<ReferenceCapability> _setCapability;
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ReferenceParams, LocationContainer,
+                    ReferenceRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<ReferenceParams, CancellationToken, Task<LocationContainer>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<ReferenceCapability> setCapability,
-                ReferenceRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Func<ReferenceParams, Task<LocationContainer>> handler,
+            ReferenceRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ReferenceParams, LocationContainer,
+                    ReferenceRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<LocationContainer> Handle(ReferenceParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(ReferenceCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Action<ReferenceParams, IObserver<Container<Location>>, ReferenceCapability,
+                CancellationToken> handler,
+            ReferenceRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ReferenceParams, LocationContainer,
+                        Location, ReferenceCapability, ReferenceRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Action<ReferenceParams, IObserver<Container<Location>>, ReferenceCapability>
+                handler,
+            ReferenceRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ReferenceParams, LocationContainer,
+                        Location, ReferenceCapability, ReferenceRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Action<ReferenceParams, IObserver<Container<Location>>, CancellationToken> handler,
+            ReferenceRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ReferenceParams, LocationContainer,
+                        Location, ReferenceRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnReferences(
+            this ILanguageServerRegistry registry,
+            Action<ReferenceParams, IObserver<Container<Location>>> handler,
+            ReferenceRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ReferenceRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.References,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<ReferenceParams, LocationContainer,
+                        Location, ReferenceRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

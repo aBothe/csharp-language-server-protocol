@@ -12,30 +12,45 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(GeneralNames.Shutdown)]
-    public interface IShutdownHandler : IJsonRpcRequestHandler<EmptyRequest> { }
+    public interface IShutdownHandler : IJsonRpcRequestHandler<EmptyRequest>
+    {
+    }
 
     public abstract class ShutdownHandler : IShutdownHandler
     {
-        public abstract Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken);
+        public virtual async Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken)
+        {
+            await Handle(cancellationToken);
+            return Unit.Value;
+        }
+
+        protected abstract Task Handle(CancellationToken cancellationToken);
     }
 
     public static class ShutdownHandlerExtensions
     {
-        public static IDisposable OnShutdown(this ILanguageServerRegistry registry, Func<Task<Unit>> handler)
+        public static IDisposable OnShutdown(
+            this ILanguageServerRegistry registry,
+            Func<CancellationToken, Task>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(GeneralNames.Shutdown,
+                RequestHandler.For<EmptyRequest, Unit>(async (_, ct) => {
+                    await handler(ct);
+                    return Unit.Value;
+                }));
         }
 
-        class DelegatingHandler : ShutdownHandler
+        public static IDisposable OnShutdown(
+            this ILanguageServerRegistry registry,
+            Func<Task>
+                handler)
         {
-            private readonly Func<Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken) => _handler.Invoke();
+            return registry.AddHandler(GeneralNames.Shutdown,
+                RequestHandler.For<EmptyRequest, Unit>(async (_, ct) => {
+                    await handler();
+                    return Unit.Value;
+                }));
         }
     }
 }

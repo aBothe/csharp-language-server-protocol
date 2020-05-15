@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Terminate)]
-    public interface ITerminateHandler : IJsonRpcRequestHandler<TerminateArguments, TerminateResponse> { }
+    public interface ITerminateHandler : IJsonRpcRequestHandler<TerminateArguments, TerminateResponse>
+    {
+    }
 
     public abstract class TerminateHandler : ITerminateHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class TerminateHandlerExtensions
     {
-        public static IDisposable OnTerminate(this IDebugAdapterRegistry registry, Func<TerminateArguments, CancellationToken, Task<TerminateResponse>> handler)
+        public static IDisposable OnTerminate(this IDebugAdapterRegistry registry,
+            Func<TerminateArguments, CancellationToken, Task<TerminateResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Terminate, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : TerminateHandler
+        public static IDisposable OnTerminate(this IDebugAdapterRegistry registry,
+            Func<TerminateArguments, Task<TerminateResponse>> handler)
         {
-            private readonly Func<TerminateArguments, CancellationToken, Task<TerminateResponse>> _handler;
-
-            public DelegatingHandler(Func<TerminateArguments, CancellationToken, Task<TerminateResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<TerminateResponse> Handle(TerminateArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Terminate, RequestHandler.For(handler));
         }
     }
 }

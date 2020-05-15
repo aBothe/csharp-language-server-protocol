@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,14 +22,16 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     [Obsolete(Constants.Proposal)]
     [Parallel, Method(TextDocumentNames.CallHierarchyIncoming)]
     public interface ICallHierarchyIncomingHandler : IJsonRpcRequestHandler<CallHierarchyIncomingCallsParams,
-        Container<CallHierarchyIncomingCall>>
+            Container<CallHierarchyIncomingCall>>,
+        IRegistration<CallHierarchyRegistrationOptions>, ICapability<CallHierarchyCapability>
     {
     }
 
     [Obsolete(Constants.Proposal)]
     [Parallel, Method(TextDocumentNames.CallHierarchyOutgoing)]
     public interface ICallHierarchyOutgoingHandler : IJsonRpcRequestHandler<CallHierarchyOutgoingCallsParams,
-        Container<CallHierarchyOutgoingCall>>
+            Container<CallHierarchyOutgoingCall>>,
+        IRegistration<CallHierarchyRegistrationOptions>, ICapability<CallHierarchyCapability>
     {
     }
 
@@ -66,62 +69,122 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     {
         public static IDisposable OnCallHierarchy(
             this ILanguageServerRegistry registry,
-            Func<CallHierarchyPrepareParams, CancellationToken, Task<Container<CallHierarchyItem>>> handler,
+            Func<CallHierarchyPrepareParams, CallHierarchyCapability, CancellationToken,
+                    Task<Container<CallHierarchyItem>>>
+                handler,
+            Func<CallHierarchyIncomingCallsParams, CallHierarchyCapability, CancellationToken,
+                    Task<Container<CallHierarchyIncomingCall>>>
+                incomingHandler,
+            Func<CallHierarchyOutgoingCallsParams, CallHierarchyCapability, CancellationToken,
+                    Task<Container<CallHierarchyOutgoingCall>>>
+                outgoingHandler,
+            CallHierarchyRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CallHierarchyRegistrationOptions();
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.PrepareCallHierarchy,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyPrepareParams,
+                        Container<CallHierarchyItem>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(handler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyIncoming,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyIncomingCallsParams,
+                        Container<CallHierarchyIncomingCall>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(incomingHandler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyOutgoing,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyOutgoingCallsParams,
+                        Container<CallHierarchyOutgoingCall>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(outgoingHandler, registrationOptions))
+            );
+        }
+
+        public static IDisposable OnCallHierarchy(
+            this ILanguageServerRegistry registry,
+            Func<CallHierarchyPrepareParams, CallHierarchyCapability,
+                    Task<Container<CallHierarchyItem>>>
+                handler,
+            Func<CallHierarchyIncomingCallsParams, CallHierarchyCapability, Task<Container<CallHierarchyIncomingCall>>>
+                incomingHandler,
+            Func<CallHierarchyOutgoingCallsParams, CallHierarchyCapability, Task<Container<CallHierarchyOutgoingCall>>>
+                outgoingHandler,
+            CallHierarchyRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CallHierarchyRegistrationOptions();
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.PrepareCallHierarchy,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyPrepareParams,
+                        Container<CallHierarchyItem>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(handler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyIncoming,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyIncomingCallsParams,
+                        Container<CallHierarchyIncomingCall>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(incomingHandler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyOutgoing,
+                    new LanguageProtocolDelegatingHandlers.Request<CallHierarchyOutgoingCallsParams,
+                        Container<CallHierarchyOutgoingCall>,
+                        CallHierarchyCapability,
+                        CallHierarchyRegistrationOptions>(outgoingHandler, registrationOptions))
+            );
+        }
+
+        public static IDisposable OnCallHierarchy(
+            this ILanguageServerRegistry registry,
+            Func<CallHierarchyPrepareParams, CancellationToken,
+                    Task<Container<CallHierarchyItem>>>
+                handler,
             Func<CallHierarchyIncomingCallsParams, CancellationToken, Task<Container<CallHierarchyIncomingCall>>>
                 incomingHandler,
             Func<CallHierarchyOutgoingCallsParams, CancellationToken, Task<Container<CallHierarchyOutgoingCall>>>
                 outgoingHandler,
-            CallHierarchyRegistrationOptions registrationOptions = null,
-            Action<CallHierarchyCapability> setCapability = null)
+            CallHierarchyRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new CallHierarchyRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, incomingHandler, outgoingHandler, setCapability, registrationOptions));
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.PrepareCallHierarchy,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyPrepareParams,
+                        Container<CallHierarchyItem>,
+                        CallHierarchyRegistrationOptions>(handler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyIncoming,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyIncomingCallsParams,
+                        Container<CallHierarchyIncomingCall>,
+                        CallHierarchyRegistrationOptions>(incomingHandler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyOutgoing,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyOutgoingCallsParams,
+                        Container<CallHierarchyOutgoingCall>,
+                        CallHierarchyRegistrationOptions>(outgoingHandler, registrationOptions))
+            );
         }
 
-        class DelegatingHandler : CallHierarchyHandler
+        public static IDisposable OnCallHierarchy(
+            this ILanguageServerRegistry registry,
+            Func<CallHierarchyPrepareParams,
+                    Task<Container<CallHierarchyItem>>>
+                handler,
+            Func<CallHierarchyIncomingCallsParams, Task<Container<CallHierarchyIncomingCall>>>
+                incomingHandler,
+            Func<CallHierarchyOutgoingCallsParams, Task<Container<CallHierarchyOutgoingCall>>>
+                outgoingHandler,
+            CallHierarchyRegistrationOptions registrationOptions)
         {
-            private readonly Func<CallHierarchyPrepareParams, CancellationToken, Task<Container<CallHierarchyItem>>>
-                _handler;
-
-            private readonly
-                Func<CallHierarchyIncomingCallsParams, CancellationToken, Task<Container<CallHierarchyIncomingCall>>>
-                _incomingHandler;
-
-            private readonly
-                Func<CallHierarchyOutgoingCallsParams, CancellationToken, Task<Container<CallHierarchyOutgoingCall>>>
-                _outgoingHandler;
-
-            private readonly Action<CallHierarchyCapability> _setCapability;
-            private CallHierarchyHandler _callHierarchyHandlerImplementation;
-
-            public DelegatingHandler(
-                Func<CallHierarchyPrepareParams, CancellationToken, Task<Container<CallHierarchyItem>>> handler,
-                Func<CallHierarchyIncomingCallsParams, CancellationToken, Task<Container<CallHierarchyIncomingCall>>>
-                    incomingHandler,
-                Func<CallHierarchyOutgoingCallsParams, CancellationToken, Task<Container<CallHierarchyOutgoingCall>>>
-                    outgoingHandler,
-                IWorkDoneProgressManager progressManager,
-                Action<CallHierarchyCapability> setCapability,
-                CallHierarchyRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _incomingHandler = incomingHandler;
-                _outgoingHandler = outgoingHandler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Container<CallHierarchyItem>> Handle(CallHierarchyPrepareParams request,
-                CancellationToken cancellationToken) => _handler(request, cancellationToken);
-
-            public override Task<Container<CallHierarchyIncomingCall>> Handle(CallHierarchyIncomingCallsParams request,
-                CancellationToken cancellationToken) => _incomingHandler(request, cancellationToken);
-
-            public override Task<Container<CallHierarchyOutgoingCall>> Handle(CallHierarchyOutgoingCallsParams request,
-                CancellationToken cancellationToken) => _outgoingHandler(request, cancellationToken);
-
-            public override void SetCapability(CallHierarchyCapability capability) =>
-                _setCapability?.Invoke(capability);
+            registrationOptions ??= new CallHierarchyRegistrationOptions();
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.PrepareCallHierarchy,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyPrepareParams,
+                        Container<CallHierarchyItem>,
+                        CallHierarchyRegistrationOptions>(handler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyIncoming,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyIncomingCallsParams,
+                        Container<CallHierarchyIncomingCall>,
+                        CallHierarchyRegistrationOptions>(incomingHandler, registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CallHierarchyOutgoing,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CallHierarchyOutgoingCallsParams,
+                        Container<CallHierarchyOutgoingCall>,
+                        CallHierarchyRegistrationOptions>(outgoingHandler, registrationOptions))
+            );
         }
     }
 }

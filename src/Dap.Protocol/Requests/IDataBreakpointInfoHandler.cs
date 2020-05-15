@@ -7,30 +7,29 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.DataBreakpointInfo)]
-    public interface IDataBreakpointInfoHandler : IJsonRpcRequestHandler<DataBreakpointInfoArguments, DataBreakpointInfoResponse> { }
+    public interface
+        IDataBreakpointInfoHandler : IJsonRpcRequestHandler<DataBreakpointInfoArguments, DataBreakpointInfoResponse>
+    {
+    }
 
     public abstract class DataBreakpointInfoHandler : IDataBreakpointInfoHandler
     {
-        public abstract Task<DataBreakpointInfoResponse> Handle(DataBreakpointInfoArguments request, CancellationToken cancellationToken);
+        public abstract Task<DataBreakpointInfoResponse> Handle(DataBreakpointInfoArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class DataBreakpointInfoHandlerExtensions
     {
-        public static IDisposable OnDataBreakpointInfo(this IDebugAdapterRegistry registry, Func<DataBreakpointInfoArguments, CancellationToken, Task<DataBreakpointInfoResponse>> handler)
+        public static IDisposable OnDataBreakpointInfo(this IDebugAdapterRegistry registry,
+            Func<DataBreakpointInfoArguments, CancellationToken, Task<DataBreakpointInfoResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.DataBreakpointInfo, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : DataBreakpointInfoHandler
+        public static IDisposable OnDataBreakpointInfo(this IDebugAdapterRegistry registry,
+            Func<DataBreakpointInfoArguments, Task<DataBreakpointInfoResponse>> handler)
         {
-            private readonly Func<DataBreakpointInfoArguments, CancellationToken, Task<DataBreakpointInfoResponse>> _handler;
-
-            public DelegatingHandler(Func<DataBreakpointInfoArguments, CancellationToken, Task<DataBreakpointInfoResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<DataBreakpointInfoResponse> Handle(DataBreakpointInfoArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.DataBreakpointInfo, RequestHandler.For(handler));
         }
     }
 }

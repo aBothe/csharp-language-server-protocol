@@ -1,13 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Threads)]
-    public interface IThreadsHandler : IJsonRpcRequestHandler<ThreadsArguments, ThreadsResponse> { }
+    public interface IThreadsHandler : IJsonRpcRequestHandler<ThreadsArguments, ThreadsResponse>
+    {
+    }
 
     public abstract class ThreadsHandler : IThreadsHandler
     {
@@ -16,21 +17,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class ThreadsHandlerExtensions
     {
-        public static IDisposable OnThreads(this IDebugAdapterRegistry registry, Func<ThreadsArguments, CancellationToken, Task<ThreadsResponse>> handler)
+        public static IDisposable OnThreads(this IDebugAdapterRegistry registry,
+            Func<ThreadsArguments, CancellationToken, Task<ThreadsResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Threads, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ThreadsHandler
+        public static IDisposable OnThreads(this IDebugAdapterRegistry registry,
+            Func<ThreadsArguments, Task<ThreadsResponse>> handler)
         {
-            private readonly Func<ThreadsArguments, CancellationToken, Task<ThreadsResponse>> _handler;
-
-            public DelegatingHandler(Func<ThreadsArguments, CancellationToken, Task<ThreadsResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<ThreadsResponse> Handle(ThreadsArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Threads, RequestHandler.For(handler));
         }
     }
 }

@@ -24,21 +24,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
     {
         public static IDisposable OnShowMessage(
             this ILanguageServerRegistry registry,
-            Func<ShowMessageParams, CancellationToken, Task<Unit>> handler)
+            Action<ShowMessageParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.ShowMessage, NotificationHandler.For(handler));
         }
 
-        class DelegatingHandler : ShowMessageHandler
+        public static IDisposable OnShowMessage(
+            this ILanguageServerRegistry registry,
+            Func<ShowMessageParams, Task> handler)
         {
-            private readonly Func<ShowMessageParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<ShowMessageParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(ShowMessageParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(WindowNames.ShowMessage, NotificationHandler.For(handler));
         }
     }
 }

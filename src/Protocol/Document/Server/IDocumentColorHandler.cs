@@ -35,32 +35,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDocumentColor(
             this ILanguageServerRegistry registry,
-            Func<DocumentColorParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
-            DocumentColorRegistrationOptions registrationOptions = null,
-            Action<ColorProviderCapability> setCapability = null)
+            Func<DocumentColorParams, ColorProviderCapability, CancellationToken, Task<Container<ColorPresentation>>>
+                handler,
+            DocumentColorRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentColorRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentColorParams, Container<ColorPresentation>, ColorProviderCapability,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentColorHandler
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Func<DocumentColorParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
+            DocumentColorRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentColorParams, CancellationToken, Task<Container<ColorPresentation>>> _handler;
-            private readonly Action<ColorProviderCapability> _setCapability;
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentColorParams, Container<ColorPresentation>,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentColorParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<ColorProviderCapability> setCapability,
-                DocumentColorRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Func<DocumentColorParams, Task<Container<ColorPresentation>>> handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentColorParams, Container<ColorPresentation>,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<Container<ColorPresentation>> Handle(DocumentColorParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(ColorProviderCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Action<DocumentColorParams, IObserver<Container<ColorPresentation>>, ColorProviderCapability,
+                CancellationToken> handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentColorParams, Container<ColorPresentation>,
+                        ColorPresentation, ColorProviderCapability, DocumentColorRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Action<DocumentColorParams, IObserver<Container<ColorPresentation>>, ColorProviderCapability>
+                handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentColorParams, Container<ColorPresentation>,
+                        ColorPresentation, ColorProviderCapability, DocumentColorRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Action<DocumentColorParams, IObserver<Container<ColorPresentation>>, CancellationToken> handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentColorParams, Container<ColorPresentation>,
+                        ColorPresentation, DocumentColorRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentColor(
+            this ILanguageServerRegistry registry,
+            Action<DocumentColorParams, IObserver<Container<ColorPresentation>>> handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentColor,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentColorParams, Container<ColorPresentation>,
+                        ColorPresentation, DocumentColorRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

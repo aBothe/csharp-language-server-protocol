@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
@@ -22,22 +23,18 @@ namespace OmniSharp.Extensions.LanguageServer.Client
     public static class ShowMessageRequestHandlerExtensions
     {
         public static IDisposable OnShowMessageRequest(
-            this ILanguageServerRegistry registry,
-            Func<ShowMessageRequestParams, CancellationToken, Task<MessageActionItem>> handler)
+            this ILanguageClientRegistry registry,
+            Func<ShowMessageRequestParams, CancellationToken, Task<MessageActionItem>>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.ShowMessageRequest, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ShowMessageRequestHandler
+        public static IDisposable OnShowMessageRequest(
+            this ILanguageClientRegistry registry,
+            Func<ShowMessageRequestParams, Task<MessageActionItem>> handler)
         {
-            private readonly Func<ShowMessageRequestParams, CancellationToken, Task<MessageActionItem>> _handler;
-
-            public DelegatingHandler(Func<ShowMessageRequestParams, CancellationToken, Task<MessageActionItem>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<MessageActionItem> Handle(ShowMessageRequestParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(WindowNames.ShowMessageRequest, RequestHandler.For(handler));
         }
     }
 }

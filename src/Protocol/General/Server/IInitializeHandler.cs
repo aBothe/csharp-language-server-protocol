@@ -24,22 +24,19 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
     public static class InitializeHandlerExtensions
     {
-        public static IDisposable OnInitialize(this ILanguageServerRegistry registry, Func<InitializeParams, CancellationToken, Task<InitializeResult>> handler)
+        public static IDisposable OnInitialize(
+            this ILanguageServerRegistry registry,
+            Func<InitializeParams, CancellationToken, Task<InitializeResult>>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(GeneralNames.Initialize, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : InitializeHandler
+        public static IDisposable OnInitialize(
+            this ILanguageServerRegistry registry,
+            Func<InitializeParams, Task<InitializeResult>> handler)
         {
-            private readonly Func<InitializeParams, CancellationToken, Task<InitializeResult>> _handler;
-
-            public DelegatingHandler(Func<InitializeParams, CancellationToken, Task<InitializeResult>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<InitializeResult> Handle(InitializeParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-
+            return registry.AddHandler(GeneralNames.Initialize, RequestHandler.For(handler));
         }
     }
 }

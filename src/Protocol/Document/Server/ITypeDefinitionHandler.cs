@@ -35,32 +35,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnTypeDefinition(
             this ILanguageServerRegistry registry,
-            Func<TypeDefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-            TypeDefinitionRegistrationOptions registrationOptions = null,
-            Action<TypeDefinitionCapability> setCapability = null)
+            Func<TypeDefinitionParams, TypeDefinitionCapability, CancellationToken, Task<LocationOrLocationLinks>>
+                handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TypeDefinitionRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                new LanguageProtocolDelegatingHandlers.Request<TypeDefinitionParams, LocationOrLocationLinks, TypeDefinitionCapability,
+                    TypeDefinitionRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : TypeDefinitionHandler
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Func<TypeDefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
         {
-            private readonly Func<TypeDefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> _handler;
-            private readonly Action<TypeDefinitionCapability> _setCapability;
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<TypeDefinitionParams, LocationOrLocationLinks,
+                    TypeDefinitionRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<TypeDefinitionParams, CancellationToken, Task<LocationOrLocationLinks>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<TypeDefinitionCapability> setCapability,
-                TypeDefinitionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Func<TypeDefinitionParams, Task<LocationOrLocationLinks>> handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<TypeDefinitionParams, LocationOrLocationLinks,
+                    TypeDefinitionRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<LocationOrLocationLinks> Handle(TypeDefinitionParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(TypeDefinitionCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Action<TypeDefinitionParams, IObserver<Container<LocationOrLocationLink>>, TypeDefinitionCapability,
+                CancellationToken> handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<TypeDefinitionParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, TypeDefinitionCapability, TypeDefinitionRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Action<TypeDefinitionParams, IObserver<Container<LocationOrLocationLink>>, TypeDefinitionCapability>
+                handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<TypeDefinitionParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, TypeDefinitionCapability, TypeDefinitionRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Action<TypeDefinitionParams, IObserver<Container<LocationOrLocationLink>>, CancellationToken> handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<TypeDefinitionParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, TypeDefinitionRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnTypeDefinition(
+            this ILanguageServerRegistry registry,
+            Action<TypeDefinitionParams, IObserver<Container<LocationOrLocationLink>>> handler,
+            TypeDefinitionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TypeDefinitionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.TypeDefinition,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<TypeDefinitionParams, LocationOrLocationLinks,
+                        LocationOrLocationLink, TypeDefinitionRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

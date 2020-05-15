@@ -18,19 +18,12 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
     {
         public static IDisposable OnAttach(this IDebugAdapterRegistry registry, Func<AttachRequestArguments, CancellationToken, Task<AttachResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Attach, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : AttachHandler
+        public static IDisposable OnAttach(this IDebugAdapterRegistry registry, Func<AttachRequestArguments, Task<AttachResponse>> handler)
         {
-            private readonly Func<AttachRequestArguments, CancellationToken, Task<AttachResponse>> _handler;
-
-            public DelegatingHandler(Func<AttachRequestArguments, CancellationToken, Task<AttachResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<AttachResponse> Handle(AttachRequestArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Attach, RequestHandler.For(handler));
         }
     }
 }

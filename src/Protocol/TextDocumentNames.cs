@@ -18,7 +18,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
         public const string DidSave = "textDocument/didSave";
         public const string DocumentColor = "textDocument/documentColor";
         public const string DocumentHighlight = "textDocument/documentHighlight";
-        public const string Formatting = "textDocument/formatting";
+        public const string DocumentFormatting = "textDocument/formatting";
         public const string DocumentLink = "textDocument/documentLink";
         public const string DocumentLinkResolve = "documentLink/resolve";
         public const string OnTypeFormatting = "textDocument/onTypeFormatting";

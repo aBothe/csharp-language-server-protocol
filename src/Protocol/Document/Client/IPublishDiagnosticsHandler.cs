@@ -23,21 +23,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class PublishDiagnosticsHandlerExtensions
     {
-        public static IDisposable OnPublishDiagnostics(this ILanguageClientRegistry registry, Func<PublishDiagnosticsParams, Task<Unit>> handler)
+        public static IDisposable OnPublishDiagnostics(this ILanguageClientRegistry registry,
+            Func<PublishDiagnosticsParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandler(TextDocumentNames.PublishDiagnostics,_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(TextDocumentNames.PublishDiagnostics, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : PublishDiagnosticsHandler
+        public static IDisposable OnPublishDiagnostics(this ILanguageClientRegistry registry,
+            Func<PublishDiagnosticsParams, Task<Unit>> handler)
         {
-            private readonly Func<PublishDiagnosticsParams, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<PublishDiagnosticsParams, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(PublishDiagnosticsParams request, CancellationToken cancellationToken) => _handler.Invoke(request);
+            return registry.AddHandler(TextDocumentNames.PublishDiagnostics, RequestHandler.For(handler));
         }
     }
 }

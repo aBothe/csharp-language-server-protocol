@@ -35,32 +35,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDocumentHighlight(
             this ILanguageServerRegistry registry,
-            Func<DocumentHighlightParams, CancellationToken, Task<DocumentHighlightContainer>> handler,
-            DocumentHighlightRegistrationOptions registrationOptions = null,
-            Action<DocumentHighlightCapability> setCapability = null)
+            Func<DocumentHighlightParams, DocumentHighlightCapability, CancellationToken, Task<DocumentHighlightContainer>>
+                handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentHighlightRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentHighlightParams, DocumentHighlightContainer, DocumentHighlightCapability,
+                    DocumentHighlightRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentHighlightHandler
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Func<DocumentHighlightParams, CancellationToken, Task<DocumentHighlightContainer>> handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentHighlightParams, CancellationToken, Task<DocumentHighlightContainer>> _handler;
-            private readonly Action<DocumentHighlightCapability> _setCapability;
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentHighlightParams, DocumentHighlightContainer,
+                    DocumentHighlightRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentHighlightParams, CancellationToken, Task<DocumentHighlightContainer>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<DocumentHighlightCapability> setCapability,
-                DocumentHighlightRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Func<DocumentHighlightParams, Task<DocumentHighlightContainer>> handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentHighlightParams, DocumentHighlightContainer,
+                    DocumentHighlightRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<DocumentHighlightContainer> Handle(DocumentHighlightParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DocumentHighlightCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Action<DocumentHighlightParams, IObserver<Container<DocumentHighlight>>, DocumentHighlightCapability,
+                CancellationToken> handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentHighlightParams, DocumentHighlightContainer,
+                        DocumentHighlight, DocumentHighlightCapability, DocumentHighlightRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Action<DocumentHighlightParams, IObserver<Container<DocumentHighlight>>, DocumentHighlightCapability>
+                handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentHighlightParams, DocumentHighlightContainer,
+                        DocumentHighlight, DocumentHighlightCapability, DocumentHighlightRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Action<DocumentHighlightParams, IObserver<Container<DocumentHighlight>>, CancellationToken> handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentHighlightParams, DocumentHighlightContainer,
+                        DocumentHighlight, DocumentHighlightRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentHighlight(
+            this ILanguageServerRegistry registry,
+            Action<DocumentHighlightParams, IObserver<Container<DocumentHighlight>>> handler,
+            DocumentHighlightRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentHighlightRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentHighlight,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentHighlightParams, DocumentHighlightContainer,
+                        DocumentHighlight, DocumentHighlightRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

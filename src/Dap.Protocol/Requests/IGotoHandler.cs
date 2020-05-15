@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Goto)]
-    public interface IGotoHandler : IJsonRpcRequestHandler<GotoArguments, GotoResponse> { }
+    public interface IGotoHandler : IJsonRpcRequestHandler<GotoArguments, GotoResponse>
+    {
+    }
 
     public abstract class GotoHandler : IGotoHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class GotoHandlerExtensions
     {
-        public static IDisposable OnGoto(this IDebugAdapterRegistry registry, Func<GotoArguments, CancellationToken, Task<GotoResponse>> handler)
+        public static IDisposable OnGoto(this IDebugAdapterRegistry registry,
+            Func<GotoArguments, CancellationToken, Task<GotoResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Goto, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : GotoHandler
+        public static IDisposable OnGoto(this IDebugAdapterRegistry registry,
+            Func<GotoArguments, Task<GotoResponse>> handler)
         {
-            private readonly Func<GotoArguments, CancellationToken, Task<GotoResponse>> _handler;
-
-            public DelegatingHandler(Func<GotoArguments, CancellationToken, Task<GotoResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<GotoResponse> Handle(GotoArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Goto, RequestHandler.For(handler));
         }
     }
 }

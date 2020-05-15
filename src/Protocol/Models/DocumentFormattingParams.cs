@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-[Method(TextDocumentNames.Formatting)]
+[Method(TextDocumentNames.DocumentFormatting)]
     public class DocumentFormattingParams : ITextDocumentIdentifierParams, IRequest<TextEditContainer>, IWorkDoneProgressParams
     {
         /// <summary>

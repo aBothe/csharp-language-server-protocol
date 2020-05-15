@@ -8,7 +8,9 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
 {
     public class RequestProcessIdentifier : IRequestProcessIdentifier
     {
-        private readonly ConcurrentDictionary<Type, RequestProcessType> _cache = new ConcurrentDictionary<Type, RequestProcessType>();
+        private readonly ConcurrentDictionary<Type, RequestProcessType> _cache =
+            new ConcurrentDictionary<Type, RequestProcessType>();
+
         private readonly RequestProcessType _defaultRequestProcessType;
 
         public RequestProcessIdentifier(RequestProcessType defaultRequestProcessType = RequestProcessType.Serial)
@@ -21,17 +23,24 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             if (_cache.TryGetValue(descriptor.HandlerType, out var type)) return type;
 
             type = _defaultRequestProcessType;
-            var handlerType = descriptor.ImplementationType;
-            var processAttribute = descriptor.ImplementationType
-                .GetCustomAttributes(true)
-                .Concat(descriptor.HandlerType.GetCustomAttributes(true))
-                .Concat(descriptor.ImplementationType.GetInterfaces().SelectMany(x => x.GetCustomAttributes()))
-                .Concat(descriptor.HandlerType.GetInterfaces().SelectMany(x => x.GetCustomAttributes()))
-                .OfType<ProcessAttribute>()
-                .FirstOrDefault();
-            if (processAttribute != null)
+            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(descriptor.Method);
+            if (typeDescriptor.RequestProcessType.HasValue)
             {
-                type = processAttribute.Type;
+                type = typeDescriptor.RequestProcessType.Value;
+            }
+            else
+            {
+                var processAttribute = descriptor.ImplementationType
+                    .GetCustomAttributes(true)
+                    .Concat(descriptor.HandlerType.GetCustomAttributes(true))
+                    .Concat(descriptor.ImplementationType.GetInterfaces().SelectMany(x => x.GetCustomAttributes()))
+                    .Concat(descriptor.HandlerType.GetInterfaces().SelectMany(x => x.GetCustomAttributes()))
+                    .OfType<ProcessAttribute>()
+                    .FirstOrDefault();
+                if (processAttribute != null)
+                {
+                    type = processAttribute.Type;
+                }
             }
 
             _cache.TryAdd(descriptor.HandlerType, type);

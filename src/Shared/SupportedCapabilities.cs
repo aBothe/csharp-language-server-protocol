@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
         {
             if (_supports.TryGetValue(capabilityType, out var capability))
             {
-                if (capability is DynamicCapability dc)
+                if (capability is IDynamicCapability dc)
                     return dc.DynamicRegistration;
             }
             return false;

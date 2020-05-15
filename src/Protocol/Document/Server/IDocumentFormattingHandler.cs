@@ -12,7 +12,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
-    [Serial, Method(TextDocumentNames.Formatting)]
+    [Serial, Method(TextDocumentNames.DocumentFormatting)]
     public interface IDocumentFormattingHandler : IJsonRpcRequestHandler<DocumentFormattingParams, TextEditContainer>, IRegistration<DocumentFormattingRegistrationOptions>, ICapability<DocumentFormattingCapability> { }
 
     public abstract class DocumentFormattingHandler : IDocumentFormattingHandler
@@ -33,32 +33,36 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDocumentFormatting(
             this ILanguageServerRegistry registry,
-            Func<DocumentFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-            DocumentFormattingRegistrationOptions registrationOptions = null,
-            Action<DocumentFormattingCapability> setCapability = null)
+            Func<DocumentFormattingParams, DocumentFormattingCapability, CancellationToken, Task<TextEditContainer>>
+                handler,
+            DocumentFormattingRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentFormattingRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.DocumentFormatting,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentFormattingParams, TextEditContainer, DocumentFormattingCapability,
+                    DocumentFormattingRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentFormattingHandler
+        public static IDisposable OnDocumentFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
+            DocumentFormattingRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentFormattingParams, CancellationToken, Task<TextEditContainer>> _handler;
-            private readonly Action<DocumentFormattingCapability> _setCapability;
+            registrationOptions ??= new DocumentFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentFormattingParams, TextEditContainer,
+                    DocumentFormattingRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-                Action<DocumentFormattingCapability> setCapability,
-                DocumentFormattingRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<TextEditContainer> Handle(DocumentFormattingParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DocumentFormattingCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnDocumentFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentFormattingParams, Task<TextEditContainer>> handler,
+            DocumentFormattingRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentFormattingParams, TextEditContainer,
+                    DocumentFormattingRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

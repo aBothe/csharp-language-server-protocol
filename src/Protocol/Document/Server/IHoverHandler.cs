@@ -33,32 +33,36 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnHover(
             this ILanguageServerRegistry registry,
-            Func<HoverParams, CancellationToken, Task<Hover>> handler,
-            HoverRegistrationOptions registrationOptions = null,
-            Action<HoverCapability> setCapability = null)
+            Func<HoverParams, HoverCapability, CancellationToken, Task<Hover>>
+                handler,
+            HoverRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new HoverRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.Hover,
+                new LanguageProtocolDelegatingHandlers.Request<HoverParams, Hover, HoverCapability,
+                    HoverRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : HoverHandler
+        public static IDisposable OnHover(
+            this ILanguageServerRegistry registry,
+            Func<HoverParams, CancellationToken, Task<Hover>> handler,
+            HoverRegistrationOptions registrationOptions)
         {
-            private readonly Func<HoverParams, CancellationToken, Task<Hover>> _handler;
-            private readonly Action<HoverCapability> _setCapability;
+            registrationOptions ??= new HoverRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Hover,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<HoverParams, Hover,
+                    HoverRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<HoverParams, CancellationToken, Task<Hover>> handler,
-                Action<HoverCapability> setCapability,
-                HoverRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Hover> Handle(HoverParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(HoverCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnHover(
+            this ILanguageServerRegistry registry,
+            Func<HoverParams, Task<Hover>> handler,
+            HoverRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new HoverRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Hover,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<HoverParams, Hover,
+                    HoverRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

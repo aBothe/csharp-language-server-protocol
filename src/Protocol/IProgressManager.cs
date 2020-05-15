@@ -14,14 +14,14 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
         /// Creates a <see cref="IObserver{T}" /> that will send all of its progress information to the same source.
         /// The other side can cancel this, so the <see cref="CancellationToken" /> should be respected.
         /// </summary>
-        ProgressObserver<T> For<T>(ProgressToken token, CancellationToken? cancellationToken = null);
+        ProgressObserver<T> For<T>(ProgressToken token, CancellationToken cancellationToken);
 
         ProgressObserver<Container<T>> For<T>(IPartialResultParams<T> request,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken);
 
         ProgressObserver<Container<T>> For<T>(IPartialItems<T> request,
-            CancellationToken? cancellationToken = null);
+            CancellationToken cancellationToken);
 
-        ProgressObserver<T> For<T>(IPartialItem<T> request, CancellationToken? cancellationToken = null);
+        ProgressObserver<T> For<T>(IPartialItem<T> request, CancellationToken cancellationToken);
     }
 }

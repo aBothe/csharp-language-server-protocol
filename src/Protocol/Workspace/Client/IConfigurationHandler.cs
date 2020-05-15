@@ -22,21 +22,19 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class ConfigurationHandlerExtensions
     {
-        public static IDisposable OnConfiguration(this ILanguageClientRegistry registry, Func<ConfigurationParams, Task<Container<JToken>>> handler)
+        public static IDisposable OnConfiguration(
+            this ILanguageClientRegistry registry,
+            Func<ConfigurationParams, CancellationToken, Task<Container<JToken>>>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WorkspaceNames.WorkspaceConfiguration, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ConfigurationHandler
+        public static IDisposable OnConfiguration(
+            this ILanguageClientRegistry registry,
+            Func<ConfigurationParams, Task<Container<JToken>>> handler)
         {
-            private readonly Func<ConfigurationParams, Task<Container<JToken>>> _handler;
-
-            public DelegatingHandler(Func<ConfigurationParams, Task<Container<JToken>>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Container<JToken>> Handle(ConfigurationParams request, CancellationToken cancellationToken) => _handler.Invoke(request);
+            return registry.AddHandler(WorkspaceNames.WorkspaceConfiguration, RequestHandler.For(handler));
         }
     }
 }

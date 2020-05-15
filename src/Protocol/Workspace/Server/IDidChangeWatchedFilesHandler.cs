@@ -34,32 +34,24 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDidChangeWatchedFiles(
             this ILanguageServerRegistry registry,
-            Func<DidChangeWatchedFilesParams, CancellationToken, Task<Unit>> handler,
-            Action<DidChangeWatchedFilesCapability> setCapability = null,
-            DidChangeWatchedFilesRegistrationOptions registrationOptions = null)
+            Action<DidChangeWatchedFilesParams, SynchronizationCapability> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DidChangeWatchedFilesHandler
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeWatchedFilesParams> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            private readonly Func<DidChangeWatchedFilesParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<DidChangeWatchedFilesCapability> _setCapability;
-
-            public DelegatingHandler(
-                Func<DidChangeWatchedFilesParams, CancellationToken, Task<Unit>> handler,
-                Action<DidChangeWatchedFilesCapability> setCapability,
-                DidChangeWatchedFilesRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DidChangeWatchedFilesCapability capability) => _setCapability?.Invoke(capability);
-
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

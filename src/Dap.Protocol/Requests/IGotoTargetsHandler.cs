@@ -7,31 +7,29 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.GotoTargets)]
-    public interface IGotoTargetsHandler : IJsonRpcRequestHandler<GotoTargetsArguments, GotoTargetsResponse> { }
+    public interface IGotoTargetsHandler : IJsonRpcRequestHandler<GotoTargetsArguments, GotoTargetsResponse>
+    {
+    }
 
 
     public abstract class GotoTargetsHandler : IGotoTargetsHandler
     {
-        public abstract Task<GotoTargetsResponse> Handle(GotoTargetsArguments request, CancellationToken cancellationToken);
+        public abstract Task<GotoTargetsResponse> Handle(GotoTargetsArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class GotoTargetsHandlerExtensions
     {
-        public static IDisposable OnGotoTargets(this IDebugAdapterRegistry registry, Func<GotoTargetsArguments, CancellationToken, Task<GotoTargetsResponse>> handler)
+        public static IDisposable OnGotoTargets(this IDebugAdapterRegistry registry,
+            Func<GotoTargetsArguments, CancellationToken, Task<GotoTargetsResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.GotoTargets, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : GotoTargetsHandler
+        public static IDisposable OnGotoTargets(this IDebugAdapterRegistry registry,
+            Func<GotoTargetsArguments, Task<GotoTargetsResponse>> handler)
         {
-            private readonly Func<GotoTargetsArguments, CancellationToken, Task<GotoTargetsResponse>> _handler;
-
-            public DelegatingHandler(Func<GotoTargetsArguments, CancellationToken, Task<GotoTargetsResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<GotoTargetsResponse> Handle(GotoTargetsArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.GotoTargets, RequestHandler.For(handler));
         }
     }
 }

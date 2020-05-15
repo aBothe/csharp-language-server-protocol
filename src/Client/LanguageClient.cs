@@ -267,15 +267,15 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public async Task Initialize(CancellationToken token)
         {
-
-            var @params = new InitializeParams();
-            @params.Trace = _trace;
-            @params.Capabilities = _clientCapabilities;
-            @params.ClientInfo = _clientInfo;
-            @params.RootUri = _rootUri;
-            @params.RootPath = _rootUri?.GetFileSystemPath();
-            @params.WorkspaceFolders = new Container<WorkspaceFolder>(_workspaceFoldersManager.WorkspaceFolders.Items);
-            @params.InitializationOptions = _initializationOptions;
+            var @params = new InitializeParams {
+                Trace = _trace,
+                Capabilities = _clientCapabilities,
+                ClientInfo = _clientInfo,
+                RootUri = _rootUri,
+                RootPath = _rootUri?.GetFileSystemPath(),
+                WorkspaceFolders = new Container<WorkspaceFolder>(_workspaceFoldersManager.WorkspaceFolders.Items),
+                InitializationOptions = _initializationOptions
+            };
             RegisterCapabilities(@params.Capabilities);
 
             ClientSettings = @params;
@@ -284,7 +284,8 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             var serverParams = await this.RequestInitialize(ClientSettings, token);
 
             ServerSettings = serverParams;
-            RegistrationManager.RegisterCapabilities(serverParams.Capabilities);
+            if (_collection.ContainsHandler(typeof(IRegisterCapabilityHandler)))
+                RegistrationManager.RegisterCapabilities(serverParams.Capabilities);
 
             // TODO: pull supported fields and add any static registrations to the registration manager
             _receiver.Initialized();
@@ -294,7 +295,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         private void RegisterCapabilities(ClientCapabilities capabilities)
         {
             capabilities.Window ??= new WindowClientCapabilities();
-            capabilities.Window.WorkDoneProgress = true;
+            capabilities.Window.WorkDoneProgress = _collection.ContainsHandler(typeof(IProgressHandler));
 
             capabilities.Workspace ??= new WorkspaceClientCapabilities();
             capabilities.Workspace.Configuration = _collection.ContainsHandler(typeof(IConfigurationHandler));

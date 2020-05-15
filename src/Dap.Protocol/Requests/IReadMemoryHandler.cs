@@ -7,31 +7,28 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.ReadMemory)]
-    public interface IReadMemoryHandler : IJsonRpcRequestHandler<ReadMemoryArguments, ReadMemoryResponse> { }
+    public interface IReadMemoryHandler : IJsonRpcRequestHandler<ReadMemoryArguments, ReadMemoryResponse>
+    {
+    }
 
     public abstract class ReadMemoryHandler : IReadMemoryHandler
     {
-        public abstract Task<ReadMemoryResponse> Handle(ReadMemoryArguments request, CancellationToken cancellationToken);
+        public abstract Task<ReadMemoryResponse> Handle(ReadMemoryArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class ReadMemoryHandlerExtensions
     {
-        public static IDisposable OnReadMemory(this IDebugAdapterRegistry registry, Func<ReadMemoryArguments, CancellationToken, Task<ReadMemoryResponse>> handler)
+        public static IDisposable OnReadMemory(this IDebugAdapterRegistry registry,
+            Func<ReadMemoryArguments, CancellationToken, Task<ReadMemoryResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.ReadMemory, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ReadMemoryHandler
+        public static IDisposable OnReadMemory(this IDebugAdapterRegistry registry,
+            Func<ReadMemoryArguments, Task<ReadMemoryResponse>> handler)
         {
-            private readonly Func<ReadMemoryArguments, CancellationToken, Task<ReadMemoryResponse>> _handler;
-
-            public DelegatingHandler(Func<ReadMemoryArguments, CancellationToken, Task<ReadMemoryResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<ReadMemoryResponse> Handle(ReadMemoryArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.ReadMemory, RequestHandler.For(handler));
         }
     }
-
 }

@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Variables)]
-    public interface IVariablesHandler : IJsonRpcRequestHandler<VariablesArguments, VariablesResponse> { }
+    public interface IVariablesHandler : IJsonRpcRequestHandler<VariablesArguments, VariablesResponse>
+    {
+    }
 
     public abstract class VariablesHandler : IVariablesHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class VariablesHandlerExtensions
     {
-        public static IDisposable OnVariables(this IDebugAdapterRegistry registry, Func<VariablesArguments, CancellationToken, Task<VariablesResponse>> handler)
+        public static IDisposable OnVariables(this IDebugAdapterRegistry registry,
+            Func<VariablesArguments, CancellationToken, Task<VariablesResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Variables, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : VariablesHandler
+        public static IDisposable OnVariables(this IDebugAdapterRegistry registry,
+            Func<VariablesArguments, Task<VariablesResponse>> handler)
         {
-            private readonly Func<VariablesArguments, CancellationToken, Task<VariablesResponse>> _handler;
-
-            public DelegatingHandler(Func<VariablesArguments, CancellationToken, Task<VariablesResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<VariablesResponse> Handle(VariablesArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Variables, RequestHandler.For(handler));
         }
     }
 }

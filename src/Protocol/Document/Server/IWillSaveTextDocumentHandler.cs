@@ -34,31 +34,77 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnWillSaveTextDocument(
             this ILanguageServerRegistry registry,
-            Func<WillSaveTextDocumentParams, CancellationToken, Task<Unit>> handler,
-            TextDocumentRegistrationOptions registrationOptions = null,
-            Action<SynchronizationCapability> setCapability = null)
+            Func<WillSaveTextDocumentParams, SynchronizationCapability, CancellationToken, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams, SynchronizationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : WillSaveTextDocumentHandler
+        public static IDisposable OnWillSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveTextDocumentParams, CancellationToken, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
         {
-            private readonly Func<WillSaveTextDocumentParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<SynchronizationCapability> _setCapability;
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<WillSaveTextDocumentParams, CancellationToken, Task<Unit>> handler,
-                Action<SynchronizationCapability> setCapability,
-                TextDocumentRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnWillSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveTextDocumentParams, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<Unit> Handle(WillSaveTextDocumentParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(SynchronizationCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnWillSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<WillSaveTextDocumentParams, SynchronizationCapability, CancellationToken> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams, SynchronizationCapability,
+                    TextDocumentRegistrationOptions>((p, c, ct) => {
+                    handler(p, c, ct);
+                    return Task.CompletedTask;
+                }, registrationOptions));
+        }
+
+        public static IDisposable OnWillSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<WillSaveTextDocumentParams, CancellationToken> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams,
+                    TextDocumentRegistrationOptions>((p, ct) => {
+                    handler(p, ct);
+                    return Task.CompletedTask;
+                }, registrationOptions));
+        }
+
+        public static IDisposable OnWillSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<WillSaveTextDocumentParams> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.WillSave,
+                new LanguageProtocolDelegatingHandlers.Notification<WillSaveTextDocumentParams,
+                    TextDocumentRegistrationOptions>((p, ct) => {
+                    handler(p);
+                    return Task.CompletedTask;
+                }, registrationOptions));
         }
     }
 }

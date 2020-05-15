@@ -28,29 +28,24 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDidChangeConfiguration(
             this ILanguageServerRegistry registry,
-            Func<DidChangeConfigurationParams, CancellationToken, Task<Unit>> handler,
-            Action<DidChangeConfigurationCapability> setCapability = null)
+            Action<DidChangeConfigurationParams, SynchronizationCapability> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability));
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeConfigurationParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DidChangeConfigurationHandler
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeConfigurationParams> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            private readonly Func<DidChangeConfigurationParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<DidChangeConfigurationCapability> _setCapability;
-
-            public DelegatingHandler(
-                Func<DidChangeConfigurationParams, CancellationToken, Task<Unit>> handler,
-                Action<DidChangeConfigurationCapability> setCapability) : base()
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Unit> Handle(DidChangeConfigurationParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DidChangeConfigurationCapability capability) => _setCapability?.Invoke(capability);
-
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeConfigurationParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

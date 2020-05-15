@@ -35,32 +35,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDocumentSymbol(
             this ILanguageServerRegistry registry,
-            Func<DocumentSymbolParams, CancellationToken, Task<SymbolInformationOrDocumentSymbolContainer>> handler,
-            DocumentSymbolRegistrationOptions registrationOptions = null,
-            Action<DocumentSymbolCapability> setCapability = null)
+            Func<DocumentSymbolParams, DocumentSymbolCapability, CancellationToken, Task<SymbolInformationOrDocumentSymbolContainer>>
+                handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentSymbolRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer, DocumentSymbolCapability,
+                    DocumentSymbolRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentSymbolHandler
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Func<DocumentSymbolParams, CancellationToken, Task<SymbolInformationOrDocumentSymbolContainer>> handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentSymbolParams, CancellationToken, Task<SymbolInformationOrDocumentSymbolContainer>> _handler;
-            private readonly Action<DocumentSymbolCapability> _setCapability;
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                    DocumentSymbolRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentSymbolParams, CancellationToken, Task<SymbolInformationOrDocumentSymbolContainer>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<DocumentSymbolCapability> setCapability,
-                DocumentSymbolRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Func<DocumentSymbolParams, Task<SymbolInformationOrDocumentSymbolContainer>> handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                    DocumentSymbolRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<SymbolInformationOrDocumentSymbolContainer> Handle(DocumentSymbolParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DocumentSymbolCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Action<DocumentSymbolParams, IObserver<Container<SymbolInformationOrDocumentSymbol>>, DocumentSymbolCapability,
+                CancellationToken> handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                        SymbolInformationOrDocumentSymbol, DocumentSymbolCapability, DocumentSymbolRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Action<DocumentSymbolParams, IObserver<Container<SymbolInformationOrDocumentSymbol>>, DocumentSymbolCapability>
+                handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                        SymbolInformationOrDocumentSymbol, DocumentSymbolCapability, DocumentSymbolRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Action<DocumentSymbolParams, IObserver<Container<SymbolInformationOrDocumentSymbol>>, CancellationToken> handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                        SymbolInformationOrDocumentSymbol, DocumentSymbolRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnDocumentSymbol(
+            this ILanguageServerRegistry registry,
+            Action<DocumentSymbolParams, IObserver<Container<SymbolInformationOrDocumentSymbol>>> handler,
+            DocumentSymbolRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentSymbolRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DocumentSymbol,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<DocumentSymbolParams, SymbolInformationOrDocumentSymbolContainer,
+                        SymbolInformationOrDocumentSymbol, DocumentSymbolRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Next)]
-    public interface INextHandler : IJsonRpcRequestHandler<NextArguments, NextResponse> { }
+    public interface INextHandler : IJsonRpcRequestHandler<NextArguments, NextResponse>
+    {
+    }
 
     public abstract class NextHandler : INextHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class NextHandlerExtensions
     {
-        public static IDisposable OnNext(this IDebugAdapterRegistry registry, Func<NextArguments, CancellationToken, Task<NextResponse>> handler)
+        public static IDisposable OnNext(this IDebugAdapterRegistry registry,
+            Func<NextArguments, CancellationToken, Task<NextResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Next, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : NextHandler
+        public static IDisposable OnNext(this IDebugAdapterRegistry registry,
+            Func<NextArguments, Task<NextResponse>> handler)
         {
-            private readonly Func<NextArguments, CancellationToken, Task<NextResponse>> _handler;
-
-            public DelegatingHandler(Func<NextArguments, CancellationToken, Task<NextResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<NextResponse> Handle(NextArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Next, RequestHandler.For(handler));
         }
     }
 }

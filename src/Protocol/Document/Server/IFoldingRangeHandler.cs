@@ -13,20 +13,28 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Parallel, Method(TextDocumentNames.FoldingRange)]
-    public interface IFoldingRangeHandler : IJsonRpcRequestHandler<FoldingRangeRequestParam, Container<FoldingRange>>, IRegistration<FoldingRangeRegistrationOptions>, ICapability<FoldingRangeCapability> { }
+    public interface IFoldingRangeHandler : IJsonRpcRequestHandler<FoldingRangeRequestParam, Container<FoldingRange>>,
+        IRegistration<FoldingRangeRegistrationOptions>, ICapability<FoldingRangeCapability>
+    {
+    }
 
     public abstract class FoldingRangeHandler : IFoldingRangeHandler
     {
         private readonly FoldingRangeRegistrationOptions _options;
         protected IWorkDoneProgressManager ProgressManager { get; }
-        public FoldingRangeHandler(FoldingRangeRegistrationOptions registrationOptions, IWorkDoneProgressManager progressManager)
+
+        public FoldingRangeHandler(FoldingRangeRegistrationOptions registrationOptions,
+            IWorkDoneProgressManager progressManager)
         {
             _options = registrationOptions;
             ProgressManager = progressManager;
         }
 
         public FoldingRangeRegistrationOptions GetRegistrationOptions() => _options;
-        public abstract Task<Container<FoldingRange>> Handle(FoldingRangeRequestParam request, CancellationToken cancellationToken);
+
+        public abstract Task<Container<FoldingRange>> Handle(FoldingRangeRequestParam request,
+            CancellationToken cancellationToken);
+
         public virtual void SetCapability(FoldingRangeCapability capability) => Capability = capability;
         protected FoldingRangeCapability Capability { get; private set; }
     }
@@ -35,32 +43,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnFoldingRange(
             this ILanguageServerRegistry registry,
-            Func<FoldingRangeRequestParam, CancellationToken, Task<Container<FoldingRange>>> handler,
-            FoldingRangeRegistrationOptions registrationOptions = null,
-            Action<FoldingRangeCapability> setCapability = null)
+            Func<FoldingRangeRequestParam, FoldingRangeCapability, CancellationToken, Task<Container<FoldingRange>>>
+                handler,
+            FoldingRangeRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new FoldingRangeRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                new LanguageProtocolDelegatingHandlers.Request<FoldingRangeRequestParam, Container<FoldingRange>, FoldingRangeCapability
+                    ,
+                    FoldingRangeRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : FoldingRangeHandler
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Func<FoldingRangeRequestParam, CancellationToken, Task<Container<FoldingRange>>> handler,
+            FoldingRangeRegistrationOptions registrationOptions)
         {
-            private readonly Func<FoldingRangeRequestParam, CancellationToken, Task<Container<FoldingRange>>> _handler;
-            private readonly Action<FoldingRangeCapability> _setCapability;
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<FoldingRangeRequestParam, Container<FoldingRange>,
+                    FoldingRangeRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<FoldingRangeRequestParam, CancellationToken, Task<Container<FoldingRange>>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<FoldingRangeCapability> setCapability,
-                FoldingRangeRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Func<FoldingRangeRequestParam, Task<Container<FoldingRange>>> handler,
+            FoldingRangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<FoldingRangeRequestParam, Container<FoldingRange>,
+                    FoldingRangeRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<Container<FoldingRange>> Handle(FoldingRangeRequestParam request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(FoldingRangeCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Action<FoldingRangeRequestParam, IObserver<Container<FoldingRange>>, FoldingRangeCapability,
+                CancellationToken> handler, FoldingRangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<FoldingRangeRequestParam, Container<FoldingRange>,
+                        FoldingRange, FoldingRangeCapability, FoldingRangeRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Action<FoldingRangeRequestParam, IObserver<Container<FoldingRange>>, FoldingRangeCapability>
+                handler,
+            FoldingRangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<FoldingRangeRequestParam, Container<FoldingRange>,
+                        FoldingRange, FoldingRangeCapability, FoldingRangeRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Action<FoldingRangeRequestParam, IObserver<Container<FoldingRange>>, CancellationToken> handler,
+            FoldingRangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<FoldingRangeRequestParam, Container<FoldingRange>,
+                        FoldingRange, FoldingRangeRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnFoldingRange(
+            this ILanguageServerRegistry registry,
+            Action<FoldingRangeRequestParam, IObserver<Container<FoldingRange>>> handler,
+            FoldingRangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new FoldingRangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.FoldingRange,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<FoldingRangeRequestParam, Container<FoldingRange>,
+                        FoldingRange, FoldingRangeRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

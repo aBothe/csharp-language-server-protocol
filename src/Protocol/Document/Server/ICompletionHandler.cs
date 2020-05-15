@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,45 +41,121 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnCompletion(
             this ILanguageServerRegistry registry,
-            Func<CompletionParams, CancellationToken, Task<CompletionList>> handler,
-            Func<CompletionItem, CancellationToken, Task<CompletionItem>> resolveHandler = null,
-            Func<CompletionItem, bool> canResolve = null,
-            CompletionRegistrationOptions registrationOptions = null,
-            Action<CompletionCapability> setCapability = null)
+            Func<CompletionParams, CompletionCapability, CancellationToken, Task<CompletionList>> handler,
+            CompletionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CompletionRegistrationOptions();
+
+            return registry.AddHandler(TextDocumentNames.Completion,
+                new LanguageProtocolDelegatingHandlers.Request<CompletionParams, CompletionList, CompletionCapability,
+                    CompletionRegistrationOptions>(
+                    handler,
+                    registrationOptions));
+        }
+
+        public static IDisposable OnCompletion(
+            this ILanguageServerRegistry registry,
+            Func<CompletionParams, CompletionCapability, CancellationToken, Task<CompletionList>> handler,
+            Func<CompletionItem, bool> canResolve ,
+            Func<CompletionItem, CompletionCapability, CancellationToken, Task<CompletionItem>> resolveHandler,
+            CompletionRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new CompletionRegistrationOptions();
             registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
-            setCapability ??= x => { };
             canResolve ??= item => registrationOptions.ResolveProvider;
-            resolveHandler ??= (link, token) => Task.FromException<CompletionItem>(new NotImplementedException());
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, resolveHandler, canResolve, setCapability, registrationOptions));
+            resolveHandler ??= (link, cap, token) => Task.FromException<CompletionItem>(new NotImplementedException());
+
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.Completion,
+                    new LanguageProtocolDelegatingHandlers.Request<CompletionParams, CompletionList, CompletionCapability,
+                        CompletionRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CompletionResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CompletionItem, CompletionCapability, CompletionRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
         }
 
-        class DelegatingHandler : CompletionHandler
+        public static IDisposable OnCompletion(
+            this ILanguageServerRegistry registry,
+            Func<CompletionParams, CancellationToken, Task<CompletionList>> handler,
+            CompletionRegistrationOptions registrationOptions)
         {
-            private readonly Func<CompletionParams, CancellationToken, Task<CompletionList>> _handler;
-            private readonly Func<CompletionItem, CancellationToken, Task<CompletionItem>> _resolveHandler;
-            private readonly Func<CompletionItem, bool> _canResolve;
-            private readonly Action<CompletionCapability> _setCapability;
+            registrationOptions ??= new CompletionRegistrationOptions();
 
-            public DelegatingHandler(
-                Func<CompletionParams, CancellationToken, Task<CompletionList>> handler,
-                Func<CompletionItem, CancellationToken, Task<CompletionItem>> resolveHandler,
-                IWorkDoneProgressManager progressManager,
-                Func<CompletionItem, bool> canResolve,
-                Action<CompletionCapability> setCapability,
-                CompletionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _resolveHandler = resolveHandler;
-                _canResolve = canResolve;
-                _setCapability = setCapability;
-            }
+            return registry.AddHandler(TextDocumentNames.Completion,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CompletionParams, CompletionList,
+                    CompletionRegistrationOptions>(
+                    handler,
+                    registrationOptions));
+        }
 
-            public override Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override Task<CompletionItem> Handle(CompletionItem request, CancellationToken cancellationToken) => _resolveHandler.Invoke(request, cancellationToken);
-            public override bool CanResolve(CompletionItem value) => _canResolve.Invoke(value);
-            public override void SetCapability(CompletionCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnCompletion(
+            this ILanguageServerRegistry registry,
+            Func<CompletionParams, CancellationToken, Task<CompletionList>> handler,
+            Func<CompletionItem, bool> canResolve ,
+            Func<CompletionItem, CancellationToken, Task<CompletionItem>> resolveHandler,
+            CompletionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CompletionRegistrationOptions();
+            registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link, token) => Task.FromException<CompletionItem>(new NotImplementedException());
+
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.Completion,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CompletionParams, CompletionList,
+                        CompletionRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CompletionResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CompletionItem, CompletionRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
+        }
+        public static IDisposable OnCompletion(
+            this ILanguageServerRegistry registry,
+            Func<CompletionParams, Task<CompletionList>> handler,
+            CompletionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CompletionRegistrationOptions();
+
+            return registry.AddHandler(TextDocumentNames.Completion,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CompletionParams, CompletionList,
+                    CompletionRegistrationOptions>(
+                    handler,
+                    registrationOptions));
+        }
+
+        public static IDisposable OnCompletion(
+            this ILanguageServerRegistry registry,
+            Func<CompletionParams, Task<CompletionList>> handler,
+            Func<CompletionItem, bool> canResolve ,
+            Func<CompletionItem, Task<CompletionItem>> resolveHandler,
+            CompletionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CompletionRegistrationOptions();
+            registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link) => Task.FromException<CompletionItem>(new NotImplementedException());
+
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.Completion,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CompletionParams, CompletionList,
+                        CompletionRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CompletionResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CompletionItem, CompletionRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
         }
     }
 }

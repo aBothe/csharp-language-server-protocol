@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -85,12 +86,9 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             ISerializer serializer,
             CancellationToken cancellationToken)
         {
-            var observer = new Subject<WorkDoneProgress>();
-            var disposable = new CompositeDisposable {observer};
-
             return new ProgressObserver<T>(
                 token,
-                CreateWorker<T>(token, router, serializer, disposable),
+                CreateWorker<T>(token, router, serializer, Disposable.Empty),
                 serializer,
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken));
         }
@@ -155,6 +153,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
         private readonly IObserver<T> _currentObserver;
         private readonly ISerializer _serializer;
         private readonly CancellationTokenSource _tokenSource;
+        private readonly TaskCompletionSource<Unit> _taskCompletionSource;
 
         internal ProgressObserver(
             ProgressToken token,
@@ -167,9 +166,11 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             _tokenSource = tokenSource;
             Token = token;
             CancellationToken = _tokenSource.Token;
+            _taskCompletionSource = new TaskCompletionSource<Unit>();
         }
 
         public ProgressToken Token { get; }
+        public Task Completed => _taskCompletionSource.Task;
         public CancellationToken CancellationToken { get; }
 
         public override void Dispose()
@@ -177,6 +178,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             if (!_tokenSource.IsCancellationRequested)
             {
                 _currentObserver.OnCompleted();
+                _taskCompletionSource.TrySetCanceled();
                 _tokenSource.Cancel();
             }
         }
@@ -186,6 +188,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             if (!_tokenSource.IsCancellationRequested)
             {
                 _currentObserver.OnCompleted();
+                _taskCompletionSource.TrySetResult(Unit.Default);
                 _tokenSource.Cancel();
             }
         }
@@ -195,6 +198,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             if (!_tokenSource.IsCancellationRequested)
             {
                 _currentObserver.OnError(error);
+                _taskCompletionSource.TrySetException(error);
                 _tokenSource.Cancel();
             }
         }

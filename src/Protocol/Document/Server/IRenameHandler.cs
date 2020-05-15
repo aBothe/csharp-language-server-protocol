@@ -33,32 +33,36 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnRename(
             this ILanguageServerRegistry registry,
-            Func<RenameParams, CancellationToken, Task<WorkspaceEdit>> handler,
-            RenameRegistrationOptions registrationOptions = null,
-            Action<RenameCapability> setCapability = null)
+            Func<RenameParams, RenameCapability, CancellationToken, Task<WorkspaceEdit>>
+                handler,
+            RenameRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new RenameRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.Rename,
+                new LanguageProtocolDelegatingHandlers.Request<RenameParams, WorkspaceEdit, RenameCapability,
+                    RenameRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : RenameHandler
+        public static IDisposable OnRename(
+            this ILanguageServerRegistry registry,
+            Func<RenameParams, CancellationToken, Task<WorkspaceEdit>> handler,
+            RenameRegistrationOptions registrationOptions)
         {
-            private readonly Func<RenameParams, CancellationToken, Task<WorkspaceEdit>> _handler;
-            private readonly Action<RenameCapability> _setCapability;
+            registrationOptions ??= new RenameRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Rename,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<RenameParams, WorkspaceEdit,
+                    RenameRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<RenameParams, CancellationToken, Task<WorkspaceEdit>> handler,
-                Action<RenameCapability> setCapability,
-                RenameRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<WorkspaceEdit> Handle(RenameParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(RenameCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnRename(
+            this ILanguageServerRegistry registry,
+            Func<RenameParams, Task<WorkspaceEdit>> handler,
+            RenameRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new RenameRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Rename,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<RenameParams, WorkspaceEdit,
+                    RenameRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

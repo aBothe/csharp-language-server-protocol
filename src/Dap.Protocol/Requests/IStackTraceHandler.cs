@@ -7,30 +7,28 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.StackTrace)]
-    public interface IStackTraceHandler : IJsonRpcRequestHandler<StackTraceArguments, StackTraceResponse> { }
+    public interface IStackTraceHandler : IJsonRpcRequestHandler<StackTraceArguments, StackTraceResponse>
+    {
+    }
 
     public abstract class StackTraceHandler : IStackTraceHandler
     {
-        public abstract Task<StackTraceResponse> Handle(StackTraceArguments request, CancellationToken cancellationToken);
+        public abstract Task<StackTraceResponse> Handle(StackTraceArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class StackTraceHandlerExtensions
     {
-        public static IDisposable OnStackTrace(this IDebugAdapterRegistry registry, Func<StackTraceArguments, CancellationToken, Task<StackTraceResponse>> handler)
+        public static IDisposable OnStackTrace(this IDebugAdapterRegistry registry,
+            Func<StackTraceArguments, CancellationToken, Task<StackTraceResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.StackTrace, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : StackTraceHandler
+        public static IDisposable OnStackTrace(this IDebugAdapterRegistry registry,
+            Func<StackTraceArguments, Task<StackTraceResponse>> handler)
         {
-            private readonly Func<StackTraceArguments, CancellationToken, Task<StackTraceResponse>> _handler;
-
-            public DelegatingHandler(Func<StackTraceArguments, CancellationToken, Task<StackTraceResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<StackTraceResponse> Handle(StackTraceArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.StackTrace, RequestHandler.For(handler));
         }
     }
 }

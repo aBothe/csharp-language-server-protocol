@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,45 +41,120 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnCodeLens(
             this ILanguageServerRegistry registry,
-            Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> handler,
-            Func<CodeLens, CancellationToken, Task<CodeLens>> resolveHandler = null,
-            Func<CodeLens, bool> canResolve = null,
-            CodeLensRegistrationOptions registrationOptions = null,
-            Action<CodeLensCapability> setCapability = null)
+            Func<CodeLensParams, CodeLensCapability, CancellationToken, Task<CodeLensContainer>> handler,
+            CodeLensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeLensRegistrationOptions();
+
+            return registry.AddHandler(TextDocumentNames.CodeLens,
+                new LanguageProtocolDelegatingHandlers.Request<CodeLensParams, CodeLensContainer, CodeLensCapability,
+                    CodeLensRegistrationOptions>(
+                    handler,
+                    registrationOptions));
+        }
+
+        public static IDisposable OnCodeLens(
+            this ILanguageServerRegistry registry,
+            Func<CodeLensParams, CodeLensCapability, CancellationToken, Task<CodeLensContainer>> handler,
+            Func<CodeLens, bool> canResolve ,
+            Func<CodeLens, CodeLensCapability, CancellationToken, Task<CodeLens>> resolveHandler,
+            CodeLensRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new CodeLensRegistrationOptions();
             registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
-            setCapability ??= x => { };
             canResolve ??= item => registrationOptions.ResolveProvider;
-            resolveHandler ??= (link, token) => Task.FromException<CodeLens>(new NotImplementedException());
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, resolveHandler, canResolve, setCapability, registrationOptions));
+            resolveHandler ??= (link, cap, token) => Task.FromException<CodeLens>(new NotImplementedException());
+
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.CodeLens,
+                    new LanguageProtocolDelegatingHandlers.Request<CodeLensParams, CodeLensContainer, CodeLensCapability,
+                        CodeLensRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CodeLensResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CodeLens, CodeLensCapability, CodeLensRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
+        }
+        public static IDisposable OnCodeLens(
+            this ILanguageServerRegistry registry,
+            Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> handler,
+            CodeLensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeLensRegistrationOptions();
+
+            return registry.AddHandler(TextDocumentNames.CodeLens,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeLensParams, CodeLensContainer,
+                    CodeLensRegistrationOptions>(
+                    handler,
+                    registrationOptions));
         }
 
-        class DelegatingHandler : CodeLensHandler
+        public static IDisposable OnCodeLens(
+            this ILanguageServerRegistry registry,
+            Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> handler,
+            Func<CodeLens, bool> canResolve ,
+            Func<CodeLens, CancellationToken, Task<CodeLens>> resolveHandler,
+            CodeLensRegistrationOptions registrationOptions)
         {
-            private readonly Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> _handler;
-            private readonly Func<CodeLens, CancellationToken, Task<CodeLens>> _resolveHandler;
-            private readonly Func<CodeLens, bool> _canResolve;
-            private readonly Action<CodeLensCapability> _setCapability;
+            registrationOptions ??= new CodeLensRegistrationOptions();
+            registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link, token) => Task.FromException<CodeLens>(new NotImplementedException());
 
-            public DelegatingHandler(
-                Func<CodeLensParams, CancellationToken, Task<CodeLensContainer>> handler,
-                Func<CodeLens, CancellationToken, Task<CodeLens>> resolveHandler,
-                IWorkDoneProgressManager progressManager,
-                Func<CodeLens, bool> canResolve,
-                Action<CodeLensCapability> setCapability,
-                CodeLensRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _resolveHandler = resolveHandler;
-                _canResolve = canResolve;
-                _setCapability = setCapability;
-            }
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.CodeLens,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeLensParams, CodeLensContainer,
+                        CodeLensRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CodeLensResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CodeLens, CodeLensRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
+        }
+        public static IDisposable OnCodeLens(
+            this ILanguageServerRegistry registry,
+            Func<CodeLensParams, Task<CodeLensContainer>> handler,
+            CodeLensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeLensRegistrationOptions();
 
-            public override Task<CodeLensContainer> Handle(CodeLensParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override Task<CodeLens> Handle(CodeLens request, CancellationToken cancellationToken) => _resolveHandler.Invoke(request, cancellationToken);
-            public override bool CanResolve(CodeLens value) => _canResolve.Invoke(value);
-            public override void SetCapability(CodeLensCapability capability) => _setCapability?.Invoke(capability);
+            return registry.AddHandler(TextDocumentNames.CodeLens,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeLensParams, CodeLensContainer,
+                    CodeLensRegistrationOptions>(
+                    handler,
+                    registrationOptions));
+        }
+
+        public static IDisposable OnCodeLens(
+            this ILanguageServerRegistry registry,
+            Func<CodeLensParams, Task<CodeLensContainer>> handler,
+            Func<CodeLens, bool> canResolve ,
+            Func<CodeLens, Task<CodeLens>> resolveHandler,
+            CodeLensRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeLensRegistrationOptions();
+            registrationOptions.ResolveProvider = canResolve != null && resolveHandler != null;
+            canResolve ??= item => registrationOptions.ResolveProvider;
+            resolveHandler ??= (link) => Task.FromException<CodeLens>(new NotImplementedException());
+
+            return new CompositeDisposable(
+                registry.AddHandler(TextDocumentNames.CodeLens,
+                    new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeLensParams, CodeLensContainer,
+                        CodeLensRegistrationOptions>(
+                        handler,
+                        registrationOptions)),
+                registry.AddHandler(TextDocumentNames.CodeLensResolve,
+                    new LanguageProtocolDelegatingHandlers.CanBeResolved<CodeLens, CodeLensRegistrationOptions>(
+                        resolveHandler,
+                        canResolve,
+                        registrationOptions))
+            );
         }
     }
 }

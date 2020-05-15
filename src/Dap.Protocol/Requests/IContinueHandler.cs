@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Continue)]
-    public interface IContinueHandler : IJsonRpcRequestHandler<ContinueArguments, ContinueResponse> { }
+    public interface IContinueHandler : IJsonRpcRequestHandler<ContinueArguments, ContinueResponse>
+    {
+    }
 
     public abstract class ContinueHandler : IContinueHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class ContinueHandlerExtensions
     {
-        public static IDisposable OnContinue(this IDebugAdapterRegistry registry, Func<ContinueArguments, CancellationToken, Task<ContinueResponse>> handler)
+        public static IDisposable OnContinue(this IDebugAdapterRegistry registry,
+            Func<ContinueArguments, CancellationToken, Task<ContinueResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Continue, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ContinueHandler
+        public static IDisposable OnContinue(this IDebugAdapterRegistry registry,
+            Func<ContinueArguments, Task<ContinueResponse>> handler)
         {
-            private readonly Func<ContinueArguments, CancellationToken, Task<ContinueResponse>> _handler;
-
-            public DelegatingHandler(Func<ContinueArguments, CancellationToken, Task<ContinueResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<ContinueResponse> Handle(ContinueArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Continue, RequestHandler.For(handler));
         }
     }
 }

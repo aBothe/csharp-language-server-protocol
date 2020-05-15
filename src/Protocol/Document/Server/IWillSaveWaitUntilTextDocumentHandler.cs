@@ -33,31 +33,47 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnWillSaveWaitUntilTextDocument(
             this ILanguageServerRegistry registry,
-            Func<WillSaveWaitUntilTextDocumentParams, CancellationToken, Task<TextEditContainer>> handler,
-            TextDocumentRegistrationOptions registrationOptions = null,
-            Action<SynchronizationCapability> setCapability = null)
+            Func<WillSaveWaitUntilTextDocumentParams, ImplementationCapability, CancellationToken, Task<TextEditContainer>>
+                handler,
+            TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, ImplementationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : WillSaveWaitUntilTextDocumentHandler
+        public static IDisposable OnWillSaveWaitUntilTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveWaitUntilTextDocumentParams, ImplementationCapability, Task<TextEditContainer>> handler,
+            TextDocumentRegistrationOptions registrationOptions)
         {
-            private readonly Func<WillSaveWaitUntilTextDocumentParams, CancellationToken, Task<TextEditContainer>> _handler;
-            private readonly Action<SynchronizationCapability> _setCapability;
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, ImplementationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<WillSaveWaitUntilTextDocumentParams, CancellationToken, Task<TextEditContainer>> handler,
-                Action<SynchronizationCapability> setCapability,
-                TextDocumentRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnWillSaveWaitUntilTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveWaitUntilTextDocumentParams, CancellationToken, Task<TextEditContainer>> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<WillSaveWaitUntilTextDocumentParams, TextEditContainer,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<TextEditContainer> Handle(WillSaveWaitUntilTextDocumentParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(SynchronizationCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnWillSaveWaitUntilTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<WillSaveWaitUntilTextDocumentParams, Task<TextEditContainer>> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.Implementation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<WillSaveWaitUntilTextDocumentParams, TextEditContainer,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

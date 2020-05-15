@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Modules)]
-    public interface IModulesHandler : IJsonRpcRequestHandler<ModulesArguments, ModulesResponse> { }
+    public interface IModulesHandler : IJsonRpcRequestHandler<ModulesArguments, ModulesResponse>
+    {
+    }
 
     public abstract class ModulesHandler : IModulesHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class ModulesHandlerExtensions
     {
-        public static IDisposable OnModules(this IDebugAdapterRegistry registry, Func<ModulesArguments, CancellationToken, Task<ModulesResponse>> handler)
+        public static IDisposable OnModules(this IDebugAdapterRegistry registry,
+            Func<ModulesArguments, CancellationToken, Task<ModulesResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Modules, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ModulesHandler
+        public static IDisposable OnModules(this IDebugAdapterRegistry registry,
+            Func<ModulesArguments, Task<ModulesResponse>> handler)
         {
-            private readonly Func<ModulesArguments, CancellationToken, Task<ModulesResponse>> _handler;
-
-            public DelegatingHandler(Func<ModulesArguments, CancellationToken, Task<ModulesResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<ModulesResponse> Handle(ModulesArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Modules, RequestHandler.For(handler));
         }
     }
 }

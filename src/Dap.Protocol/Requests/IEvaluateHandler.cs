@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Evaluate)]
-    public interface IEvaluateHandler : IJsonRpcRequestHandler<EvaluateArguments, EvaluateResponse> { }
+    public interface IEvaluateHandler : IJsonRpcRequestHandler<EvaluateArguments, EvaluateResponse>
+    {
+    }
 
 
     public abstract class EvaluateHandler : IEvaluateHandler
@@ -17,21 +19,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class EvaluateHandlerExtensions
     {
-        public static IDisposable OnEvaluate(this IDebugAdapterRegistry registry, Func<EvaluateArguments, CancellationToken, Task<EvaluateResponse>> handler)
+        public static IDisposable OnEvaluate(this IDebugAdapterRegistry registry,
+            Func<EvaluateArguments, CancellationToken, Task<EvaluateResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Evaluate, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : EvaluateHandler
+        public static IDisposable OnEvaluate(this IDebugAdapterRegistry registry,
+            Func<EvaluateArguments, Task<EvaluateResponse>> handler)
         {
-            private readonly Func<EvaluateArguments, CancellationToken, Task<EvaluateResponse>> _handler;
-
-            public DelegatingHandler(Func<EvaluateArguments, CancellationToken, Task<EvaluateResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<EvaluateResponse> Handle(EvaluateArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Evaluate, RequestHandler.For(handler));
         }
     }
 }

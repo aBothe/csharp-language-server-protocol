@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities
@@ -7,7 +8,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities
         /// <summary>
         /// Whether completion supports dynamic registration.
         /// </summary>
-        [Optional]
+        [Optional, EditorBrowsable(EditorBrowsableState.Never)]
         public bool DynamicRegistration { get; set; }
     }
 }

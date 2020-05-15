@@ -21,21 +21,19 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class ApplyEditHandlerExtensions
     {
-        public static IDisposable OnApplyEdit(this ILanguageClientRegistry registry, Func<ApplyWorkspaceEditParams, Task<ApplyWorkspaceEditResponse>> handler)
+        public static IDisposable OnApplyWorkspaceEdit(
+            this ILanguageClientRegistry registry,
+            Func<ApplyWorkspaceEditParams, CancellationToken, Task<ApplyWorkspaceEditResponse>>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WorkspaceNames.ApplyEdit, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : ApplyEditHandler
+        public static IDisposable OnApplyWorkspaceEdit(
+            this ILanguageClientRegistry registry,
+            Func<ApplyWorkspaceEditParams, Task<ApplyWorkspaceEditResponse>> handler)
         {
-            private readonly Func<ApplyWorkspaceEditParams, Task<ApplyWorkspaceEditResponse>> _handler;
-
-            public DelegatingHandler(Func<ApplyWorkspaceEditParams, Task<ApplyWorkspaceEditResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<ApplyWorkspaceEditResponse> Handle(ApplyWorkspaceEditParams request, CancellationToken cancellationToken) => _handler.Invoke(request);
+            return registry.AddHandler(WorkspaceNames.ApplyEdit, RequestHandler.For(handler));
         }
     }
 }

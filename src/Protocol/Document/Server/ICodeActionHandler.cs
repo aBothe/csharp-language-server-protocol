@@ -43,35 +43,90 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnCodeAction(
             this ILanguageServerRegistry registry,
-            Func<CodeActionParams, CancellationToken, Task<CommandOrCodeActionContainer>> handler,
-            CodeActionRegistrationOptions registrationOptions = null,
-            Action<CodeActionCapability> setCapability = null)
+            Func<CodeActionParams, CodeActionCapability, CancellationToken, Task<CommandOrCodeActionContainer>>
+                handler,
+            CodeActionRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new CodeActionRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ =>
-                ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                new LanguageProtocolDelegatingHandlers.Request<CodeActionParams, CommandOrCodeActionContainer, CodeActionCapability,
+                    CodeActionRegistrationOptions>(handler, registrationOptions));
         }
 
-        internal class DelegatingHandler : CodeActionHandler
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Func<CodeActionParams, CancellationToken, Task<CommandOrCodeActionContainer>> handler,
+            CodeActionRegistrationOptions registrationOptions)
         {
-            private readonly Func<CodeActionParams, CancellationToken, Task<CommandOrCodeActionContainer>> _handler;
-            private readonly Action<CodeActionCapability> _setCapability;
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeActionParams, CommandOrCodeActionContainer,
+                    CodeActionRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<CodeActionParams, CancellationToken, Task<CommandOrCodeActionContainer>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<CodeActionCapability> setCapability,
-                CodeActionRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Func<CodeActionParams, Task<CommandOrCodeActionContainer>> handler,
+            CodeActionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<CodeActionParams, CommandOrCodeActionContainer,
+                    CodeActionRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<CommandOrCodeActionContainer> Handle(CodeActionParams request,
-                CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Action<CodeActionParams, IObserver<Container<CodeActionOrCommand>>, CodeActionCapability,
+                CancellationToken> handler,
+            CodeActionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<CodeActionParams, CommandOrCodeActionContainer,
+                        CodeActionOrCommand, CodeActionCapability, CodeActionRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
 
-            public override void SetCapability(CodeActionCapability capability) => _setCapability?.Invoke(capability);
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Action<CodeActionParams, IObserver<Container<CodeActionOrCommand>>, CodeActionCapability>
+                handler,
+            CodeActionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<CodeActionParams, CommandOrCodeActionContainer,
+                        CodeActionOrCommand, CodeActionCapability, CodeActionRegistrationOptions>(handler,
+                        registrationOptions, _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Action<CodeActionParams, IObserver<Container<CodeActionOrCommand>>, CancellationToken> handler,
+            CodeActionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<CodeActionParams, CommandOrCodeActionContainer,
+                        CodeActionOrCommand, CodeActionRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
+        }
+
+        public static IDisposable OnCodeAction(
+            this ILanguageServerRegistry registry,
+            Action<CodeActionParams, IObserver<Container<CodeActionOrCommand>>> handler,
+            CodeActionRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new CodeActionRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.CodeAction,
+                _ =>
+                    new LanguageProtocolDelegatingHandlers.PartialResults<CodeActionParams, CommandOrCodeActionContainer,
+                        CodeActionOrCommand, CodeActionRegistrationOptions>(handler, registrationOptions,
+                        _.GetService<IProgressManager>()));
         }
     }
 }

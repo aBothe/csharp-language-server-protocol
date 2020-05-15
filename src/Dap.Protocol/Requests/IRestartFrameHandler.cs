@@ -7,30 +7,28 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.RestartFrame)]
-    public interface IRestartFrameHandler : IJsonRpcRequestHandler<RestartFrameArguments, RestartFrameResponse> { }
+    public interface IRestartFrameHandler : IJsonRpcRequestHandler<RestartFrameArguments, RestartFrameResponse>
+    {
+    }
 
     public abstract class RestartFrameHandler : IRestartFrameHandler
     {
-        public abstract Task<RestartFrameResponse> Handle(RestartFrameArguments request, CancellationToken cancellationToken);
+        public abstract Task<RestartFrameResponse> Handle(RestartFrameArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class RestartFrameHandlerExtensions
     {
-        public static IDisposable OnRestartFrame(this IDebugAdapterRegistry registry, Func<RestartFrameArguments, CancellationToken, Task<RestartFrameResponse>> handler)
+        public static IDisposable OnRestartFrame(this IDebugAdapterRegistry registry,
+            Func<RestartFrameArguments, CancellationToken, Task<RestartFrameResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.RestartFrame, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : RestartFrameHandler
+        public static IDisposable OnRestartFrame(this IDebugAdapterRegistry registry,
+            Func<RestartFrameArguments, Task<RestartFrameResponse>> handler)
         {
-            private readonly Func<RestartFrameArguments, CancellationToken, Task<RestartFrameResponse>> _handler;
-
-            public DelegatingHandler(Func<RestartFrameArguments, CancellationToken, Task<RestartFrameResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<RestartFrameResponse> Handle(RestartFrameArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.RestartFrame, RequestHandler.For(handler));
         }
     }
 }

@@ -7,31 +7,28 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.Disassemble)]
-    public interface IDisassembleHandler : IJsonRpcRequestHandler<DisassembleArguments, DisassembleResponse> { }
+    public interface IDisassembleHandler : IJsonRpcRequestHandler<DisassembleArguments, DisassembleResponse>
+    {
+    }
 
     public abstract class DisassembleHandler : IDisassembleHandler
     {
-        public abstract Task<DisassembleResponse> Handle(DisassembleArguments request, CancellationToken cancellationToken);
+        public abstract Task<DisassembleResponse> Handle(DisassembleArguments request,
+            CancellationToken cancellationToken);
     }
 
     public static class DisassembleHandlerExtensions
     {
-        public static IDisposable OnDisassemble(this IDebugAdapterRegistry registry, Func<DisassembleArguments, CancellationToken, Task<DisassembleResponse>> handler)
+        public static IDisposable OnDisassemble(this IDebugAdapterRegistry registry,
+            Func<DisassembleArguments, CancellationToken, Task<DisassembleResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.Disassemble, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : DisassembleHandler
+        public static IDisposable OnDisassemble(this IDebugAdapterRegistry registry,
+            Func<DisassembleArguments, Task<DisassembleResponse>> handler)
         {
-            private readonly Func<DisassembleArguments, CancellationToken, Task<DisassembleResponse>> _handler;
-
-            public DelegatingHandler(Func<DisassembleArguments, CancellationToken, Task<DisassembleResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<DisassembleResponse> Handle(DisassembleArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.Disassemble, RequestHandler.For(handler));
         }
     }
-
 }

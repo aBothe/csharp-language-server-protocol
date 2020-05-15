@@ -24,21 +24,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
     {
         public static IDisposable OnLogMessage(
             this ILanguageServerRegistry registry,
-            Func<LogMessageParams, CancellationToken, Task<Unit>> handler)
+            Action<LogMessageParams> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WindowNames.LogMessage, NotificationHandler.For(handler));
         }
 
-        class DelegatingHandler : LogMessageHandler
+        public static IDisposable OnLogMessage(
+            this ILanguageServerRegistry registry,
+            Func<LogMessageParams, Task> handler)
         {
-            private readonly Func<LogMessageParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<LogMessageParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(LogMessageParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(WindowNames.LogMessage, NotificationHandler.For(handler));
         }
     }
 }

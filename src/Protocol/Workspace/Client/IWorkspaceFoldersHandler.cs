@@ -21,21 +21,19 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class WorkspaceFoldersHandlerExtensions
     {
-        public static IDisposable OnWorkspaceFolders(this ILanguageClientRegistry registry, Func<WorkspaceFolderParams, Task<Container<WorkspaceFolder>>> handler)
+        public static IDisposable OnWorkspaceFolders(
+            this ILanguageClientRegistry registry,
+            Func<WorkspaceFolderParams, CancellationToken, Task<Container<WorkspaceFolder>>>
+                handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(WorkspaceNames.WorkspaceFolders, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : WorkspaceFoldersHandler
+        public static IDisposable OnWorkspaceFolders(
+            this ILanguageClientRegistry registry,
+            Func<WorkspaceFolderParams, Task<Container<WorkspaceFolder>>> handler)
         {
-            private readonly Func<WorkspaceFolderParams, Task<Container<WorkspaceFolder>>> _handler;
-
-            public DelegatingHandler(Func<WorkspaceFolderParams, Task<Container<WorkspaceFolder>>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Container<WorkspaceFolder>> Handle(WorkspaceFolderParams request, CancellationToken cancellationToken) => _handler.Invoke(request);
+            return registry.AddHandler(WorkspaceNames.WorkspaceFolders, RequestHandler.For(handler));
         }
     }
 }

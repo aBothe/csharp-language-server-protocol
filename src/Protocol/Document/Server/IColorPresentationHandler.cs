@@ -34,32 +34,36 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnColorPresentation(
             this ILanguageServerRegistry registry,
-            Func<ColorPresentationParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
-            DocumentColorRegistrationOptions registrationOptions = null,
-            Action<ColorProviderCapability> setCapability = null)
+            Func<ColorPresentationParams, ColorProviderCapability, CancellationToken, Task<Container<ColorPresentation>>>
+                handler,
+            DocumentColorRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentColorRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.ColorPresentation,
+                new LanguageProtocolDelegatingHandlers.Request<ColorPresentationParams, Container<ColorPresentation>, ColorProviderCapability,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : ColorPresentationHandler
+        public static IDisposable OnColorPresentation(
+            this ILanguageServerRegistry registry,
+            Func<ColorPresentationParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
+            DocumentColorRegistrationOptions registrationOptions)
         {
-            private readonly Func<ColorPresentationParams, CancellationToken, Task<Container<ColorPresentation>>> _handler;
-            private readonly Action<ColorProviderCapability> _setCapability;
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.ColorPresentation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ColorPresentationParams, Container<ColorPresentation>,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<ColorPresentationParams, CancellationToken, Task<Container<ColorPresentation>>> handler,
-                Action<ColorProviderCapability> setCapability,
-                DocumentColorRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Container<ColorPresentation>> Handle(ColorPresentationParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(ColorProviderCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnColorPresentation(
+            this ILanguageServerRegistry registry,
+            Func<ColorPresentationParams, Task<Container<ColorPresentation>>> handler,
+            DocumentColorRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentColorRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.ColorPresentation,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ColorPresentationParams, Container<ColorPresentation>,
+                    DocumentColorRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

@@ -7,7 +7,9 @@ using OmniSharp.Extensions.JsonRpc;
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
     [Parallel, Method(RequestNames.StepBack)]
-    public interface IStepBackHandler : IJsonRpcRequestHandler<StepBackArguments, StepBackResponse> { }
+    public interface IStepBackHandler : IJsonRpcRequestHandler<StepBackArguments, StepBackResponse>
+    {
+    }
 
     public abstract class StepBackHandler : IStepBackHandler
     {
@@ -16,21 +18,16 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 
     public static class StepBackHandlerExtensions
     {
-        public static IDisposable OnStepBack(this IDebugAdapterRegistry registry, Func<StepBackArguments, CancellationToken, Task<StepBackResponse>> handler)
+        public static IDisposable OnStepBack(this IDebugAdapterRegistry registry,
+            Func<StepBackArguments, CancellationToken, Task<StepBackResponse>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(RequestNames.StepBack, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : StepBackHandler
+        public static IDisposable OnStepBack(this IDebugAdapterRegistry registry,
+            Func<StepBackArguments, Task<StepBackResponse>> handler)
         {
-            private readonly Func<StepBackArguments, CancellationToken, Task<StepBackResponse>> _handler;
-
-            public DelegatingHandler(Func<StepBackArguments, CancellationToken, Task<StepBackResponse>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<StepBackResponse> Handle(StepBackArguments request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(RequestNames.StepBack, RequestHandler.For(handler));
         }
     }
 }

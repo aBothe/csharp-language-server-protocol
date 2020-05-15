@@ -31,34 +31,38 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
     public static class DocumentOnTypeFormatHandlerExtensions
     {
-        public static IDisposable OnDocumentOnTypeFormat(
+        public static IDisposable OnTypeFormatting(
             this ILanguageServerRegistry registry,
-            Func<DocumentOnTypeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-            DocumentOnTypeFormattingRegistrationOptions registrationOptions = null,
-            Action<DocumentOnTypeFormattingCapability> setCapability = null)
+            Func<DocumentOnTypeFormattingParams, DocumentOnTypeFormattingCapability, CancellationToken, Task<TextEditContainer>>
+                handler,
+            DocumentOnTypeFormattingRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentOnTypeFormattingRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.OnTypeFormatting,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentOnTypeFormattingParams, TextEditContainer, DocumentOnTypeFormattingCapability,
+                    DocumentOnTypeFormattingRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentOnTypeFormatHandler
+        public static IDisposable OnTypeFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentOnTypeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
+            DocumentOnTypeFormattingRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentOnTypeFormattingParams, CancellationToken, Task<TextEditContainer>> _handler;
-            private readonly Action<DocumentOnTypeFormattingCapability> _setCapability;
+            registrationOptions ??= new DocumentOnTypeFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.OnTypeFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentOnTypeFormattingParams, TextEditContainer,
+                    DocumentOnTypeFormattingRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentOnTypeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-                Action<DocumentOnTypeFormattingCapability> setCapability,
-                DocumentOnTypeFormattingRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<TextEditContainer> Handle(DocumentOnTypeFormattingParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DocumentOnTypeFormattingCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnTypeFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentOnTypeFormattingParams, Task<TextEditContainer>> handler,
+            DocumentOnTypeFormattingRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentOnTypeFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.OnTypeFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentOnTypeFormattingParams, TextEditContainer,
+                    DocumentOnTypeFormattingRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

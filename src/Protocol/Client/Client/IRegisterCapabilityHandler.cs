@@ -13,7 +13,9 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace OmniSharp.Extensions.LanguageServer.Client
 {
     [Serial, Method(ClientNames.RegisterCapability)]
-    public interface IRegisterCapabilityHandler : IJsonRpcRequestHandler<RegistrationParams> { }
+    public interface IRegisterCapabilityHandler : IJsonRpcRequestHandler<RegistrationParams>
+    {
+    }
 
     public abstract class RegisterCapabilityHandler : IRegisterCapabilityHandler
     {
@@ -22,21 +24,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
     public static class RegisterCapabilityHandlerExtensions
     {
-        public static IDisposable OnRegisterCapability(this ILanguageClientRegistry registry, Func<RegistrationParams, CancellationToken, Task<Unit>> handler)
+        public static IDisposable OnRegisterCapability(this ILanguageClientRegistry registry,
+            Func<RegistrationParams, CancellationToken, Task<Unit>> handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
+            return registry.AddHandler(ClientNames.RegisterCapability, RequestHandler.For(handler));
         }
 
-        class DelegatingHandler : RegisterCapabilityHandler
+        public static IDisposable OnRegisterCapability(this ILanguageClientRegistry registry,
+            Func<RegistrationParams, Task<Unit>> handler)
         {
-            private readonly Func<RegistrationParams, CancellationToken, Task<Unit>> _handler;
-
-            public DelegatingHandler(Func<RegistrationParams, CancellationToken, Task<Unit>> handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(RegistrationParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
+            return registry.AddHandler(ClientNames.RegisterCapability, RequestHandler.For(handler));
         }
     }
 }

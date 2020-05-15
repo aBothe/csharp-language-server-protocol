@@ -34,32 +34,24 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnDidSaveTextDocument(
             this ILanguageServerRegistry registry,
-            Func<DidSaveTextDocumentParams, CancellationToken, Task<Unit>> handler,
-            TextDocumentSaveRegistrationOptions registrationOptions = null,
-            Action<SynchronizationCapability> setCapability = null)
+            Action<DidSaveTextDocumentParams, SynchronizationCapability> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new TextDocumentSaveRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidSave,
+                new LanguageProtocolDelegatingHandlers.Notification<DidSaveTextDocumentParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DidSaveTextDocumentHandler
+        public static IDisposable OnDidSaveTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<DidSaveTextDocumentParams> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
         {
-            private readonly Func<DidSaveTextDocumentParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<SynchronizationCapability> _setCapability;
-
-            public DelegatingHandler(
-                Func<DidSaveTextDocumentParams, CancellationToken, Task<Unit>> handler,
-                Action<SynchronizationCapability> setCapability,
-                TextDocumentSaveRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(SynchronizationCapability capability) => _setCapability?.Invoke(capability);
-
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidSave,
+                new LanguageProtocolDelegatingHandlers.Notification<DidSaveTextDocumentParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

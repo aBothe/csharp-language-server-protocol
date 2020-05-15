@@ -31,34 +31,38 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
     public static class DocumentRangeFormattingHandlerExtensions
     {
-        public static IDisposable OnDocumentRangeFormatting(
+        public static IDisposable OnRangeFormatting(
             this ILanguageServerRegistry registry,
-            Func<DocumentRangeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-            DocumentRangeFormattingRegistrationOptions registrationOptions = null,
-            Action<DocumentRangeFormattingCapability> setCapability = null)
+            Func<DocumentRangeFormattingParams, DocumentRangeFormattingCapability, CancellationToken, Task<TextEditContainer>>
+                handler,
+            DocumentRangeFormattingRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new DocumentRangeFormattingRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(TextDocumentNames.RangeFormatting,
+                new LanguageProtocolDelegatingHandlers.Request<DocumentRangeFormattingParams, TextEditContainer, DocumentRangeFormattingCapability,
+                    DocumentRangeFormattingRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : DocumentRangeFormattingHandler
+        public static IDisposable OnRangeFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentRangeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
+            DocumentRangeFormattingRegistrationOptions registrationOptions)
         {
-            private readonly Func<DocumentRangeFormattingParams, CancellationToken, Task<TextEditContainer>> _handler;
-            private readonly Action<DocumentRangeFormattingCapability> _setCapability;
+            registrationOptions ??= new DocumentRangeFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.RangeFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentRangeFormattingParams, TextEditContainer,
+                    DocumentRangeFormattingRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(
-                Func<DocumentRangeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
-                Action<DocumentRangeFormattingCapability> setCapability,
-                DocumentRangeFormattingRegistrationOptions registrationOptions) : base(registrationOptions)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
-
-            public override Task<TextEditContainer> Handle(DocumentRangeFormattingParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(DocumentRangeFormattingCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnRangeFormatting(
+            this ILanguageServerRegistry registry,
+            Func<DocumentRangeFormattingParams, Task<TextEditContainer>> handler,
+            DocumentRangeFormattingRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DocumentRangeFormattingRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.RangeFormatting,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<DocumentRangeFormattingParams, TextEditContainer,
+                    DocumentRangeFormattingRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

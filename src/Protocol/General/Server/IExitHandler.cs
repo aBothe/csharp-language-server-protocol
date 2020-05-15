@@ -12,34 +12,27 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(GeneralNames.Exit)]
-    public interface IExitHandler : IJsonRpcNotificationHandler { }
+    public interface IExitHandler : IJsonRpcNotificationHandler
+    {
+    }
 
     public abstract class ExitHandler : IExitHandler
     {
-        public abstract Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken);
+        public virtual async Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken)
+        {
+            await Handle(cancellationToken);
+            return Unit.Value;
+        }
+
+        protected abstract Task Handle(CancellationToken cancellationToken);
     }
 
     public static class ExitHandlerExtensions
     {
         public static IDisposable OnExit(this ILanguageServerRegistry registry, Action handler)
         {
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler));
-        }
-
-        class DelegatingHandler : ExitHandler
-        {
-            private readonly Action _handler;
-
-            public DelegatingHandler(Action handler)
-            {
-                _handler = handler;
-            }
-
-            public override Task<Unit> Handle(EmptyRequest request, CancellationToken cancellationToken)
-            {
-                _handler.Invoke();
-                return Unit.Task;
-            }
+            return registry.AddHandler(GeneralNames.Exit,
+                NotificationHandler.For<EmptyRequest>(_ => handler()));
         }
     }
 }

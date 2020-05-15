@@ -16,6 +16,9 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             HandlerType = handlerType;
             InterfaceType = HandlerTypeHelpers.GetHandlerInterface(handlerType);
             ParamsType = handlerType.IsGenericType ? handlerType.GetGenericArguments()[0] : typeof(EmptyRequest);
+            HasParamsType = ParamsType != typeof(EmptyRequest);
+            IsNotification = typeof(IJsonRpcNotificationHandler).IsAssignableFrom(handlerType) || typeof(IJsonRpcNotificationHandler<>).MakeGenericType(ParamsType).IsAssignableFrom(handlerType);
+            IsRequest = !IsNotification;
 
             var requestInterface = ParamsType?
                 .GetInterfaces()
@@ -28,11 +31,22 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             CapabilityType = HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handlerType);
             HasCapability = CapabilityType != null;
             IsDynamicCapability = typeof(IDynamicCapability).GetTypeInfo().IsAssignableFrom(CapabilityType);
+            RequestProcessType = HandlerType
+                .GetCustomAttributes(true)
+                .Concat(HandlerType.GetCustomAttributes(true))
+                .Concat(InterfaceType.GetInterfaces().SelectMany(x => x.GetCustomAttributes(true)))
+                .Concat(HandlerType.GetInterfaces().SelectMany(x => x.GetCustomAttributes(true)))
+                .OfType<ProcessAttribute>()
+                .FirstOrDefault()?.Type;
         }
 
         public string Method { get; }
+        public RequestProcessType? RequestProcessType { get; }
+        public bool IsRequest { get; }
         public Type HandlerType { get; }
         public Type InterfaceType { get; }
+        public bool IsNotification { get; }
+        public bool HasParamsType { get; }
         public Type ParamsType { get; }
         public bool HasResponseType { get; }
         public Type ResponseType { get; }
@@ -43,4 +57,3 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
         public bool IsDynamicCapability { get; }
     }
 }
-

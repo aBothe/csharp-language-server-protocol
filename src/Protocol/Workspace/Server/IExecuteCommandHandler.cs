@@ -37,32 +37,47 @@ namespace OmniSharp.Extensions.LanguageServer.Server
     {
         public static IDisposable OnExecuteCommand(
             this ILanguageServerRegistry registry,
-            Func<ExecuteCommandParams, CancellationToken, Task<Unit>> handler,
-            ExecuteCommandRegistrationOptions registrationOptions = null,
-            Action<ExecuteCommandCapability> setCapability = null)
+            Func<ExecuteCommandParams, ExecuteCommandCapability, CancellationToken, Task>
+                handler,
+            ExecuteCommandRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new ExecuteCommandRegistrationOptions();
-            setCapability ??= x => { };
-            return registry.AddHandler(_ => ActivatorUtilities.CreateInstance<DelegatingHandler>(_, handler, setCapability, registrationOptions));
+            return registry.AddHandler(WorkspaceNames.ExecuteCommand,
+                new LanguageProtocolDelegatingHandlers.Request<ExecuteCommandParams, ExecuteCommandCapability,
+                    ExecuteCommandRegistrationOptions>(handler, registrationOptions));
         }
 
-        class DelegatingHandler : ExecuteCommandHandler
+        public static IDisposable OnExecuteCommand(
+            this ILanguageServerRegistry registry,
+            Func<ExecuteCommandParams, ExecuteCommandCapability, Task> handler,
+            ExecuteCommandRegistrationOptions registrationOptions)
         {
-            private readonly Func<ExecuteCommandParams, CancellationToken, Task<Unit>> _handler;
-            private readonly Action<ExecuteCommandCapability> _setCapability;
+            registrationOptions ??= new ExecuteCommandRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.ExecuteCommand,
+                new LanguageProtocolDelegatingHandlers.Request<ExecuteCommandParams, ExecuteCommandCapability,
+                    ExecuteCommandRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public DelegatingHandler(Func<ExecuteCommandParams, CancellationToken, Task<Unit>> handler,
-                IWorkDoneProgressManager progressManager,
-                Action<ExecuteCommandCapability> setCapability,
-                ExecuteCommandRegistrationOptions registrationOptions) : base(registrationOptions, progressManager)
-            {
-                _handler = handler;
-                _setCapability = setCapability;
-            }
+        public static IDisposable OnExecuteCommand(
+            this ILanguageServerRegistry registry,
+            Func<ExecuteCommandParams, CancellationToken, Task> handler,
+            ExecuteCommandRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ExecuteCommandRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.ExecuteCommand,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ExecuteCommandParams,
+                    ExecuteCommandRegistrationOptions>(handler, registrationOptions));
+        }
 
-            public override Task<Unit> Handle(ExecuteCommandParams request, CancellationToken cancellationToken) => _handler.Invoke(request, cancellationToken);
-            public override void SetCapability(ExecuteCommandCapability capability) => _setCapability?.Invoke(capability);
-
+        public static IDisposable OnExecuteCommand(
+            this ILanguageServerRegistry registry,
+            Func<ExecuteCommandParams, Task> handler,
+            ExecuteCommandRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new ExecuteCommandRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.ExecuteCommand,
+                new LanguageProtocolDelegatingHandlers.RequestRegistration<ExecuteCommandParams,
+                    ExecuteCommandRegistrationOptions>(handler, registrationOptions));
         }
     }
 }
