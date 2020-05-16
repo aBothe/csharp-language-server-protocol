@@ -39,7 +39,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected FoldingRangeCapability Capability { get; private set; }
     }
 
-    public static class FoldingRangeHandlerExtensions
+    public static class FoldingRangeExtensions
     {
         public static IDisposable OnFoldingRange(
             this ILanguageServerRegistry registry,

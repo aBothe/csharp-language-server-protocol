@@ -37,7 +37,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected CodeLensCapability Capability { get; private set; }
     }
 
-    public static class CodeLensHandlerExtensions
+    public static class CodeLensExtensions
     {
         public static IDisposable OnCodeLens(
             this ILanguageServerRegistry registry,

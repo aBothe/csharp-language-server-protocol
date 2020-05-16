@@ -18,7 +18,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class GotoTargetsHandlerExtensions
+    public static class GotoTargetsExtensions
     {
         public static IDisposable OnGotoTargets(this IDebugAdapterRegistry registry,
             Func<GotoTargetsArguments, CancellationToken, Task<GotoTargetsResponse>> handler)

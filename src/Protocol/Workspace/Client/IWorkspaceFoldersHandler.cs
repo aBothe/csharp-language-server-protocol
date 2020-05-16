@@ -19,7 +19,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Container<WorkspaceFolder>> Handle(WorkspaceFolderParams request, CancellationToken cancellationToken);
     }
 
-    public static class WorkspaceFoldersHandlerExtensions
+    public static class WorkspaceFoldersExtensions
     {
         public static IDisposable OnWorkspaceFolders(
             this ILanguageClientRegistry registry,

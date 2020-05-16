@@ -13,12 +13,12 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(TextDocumentNames.OnTypeFormatting)]
-    public interface IDocumentOnTypeFormatHandler : IJsonRpcRequestHandler<DocumentOnTypeFormattingParams, TextEditContainer>, IRegistration<DocumentOnTypeFormattingRegistrationOptions>, ICapability<DocumentOnTypeFormattingCapability> { }
+    public interface IDocumentOnTypeFormattingHandler : IJsonRpcRequestHandler<DocumentOnTypeFormattingParams, TextEditContainer>, IRegistration<DocumentOnTypeFormattingRegistrationOptions>, ICapability<DocumentOnTypeFormattingCapability> { }
 
-    public abstract class DocumentOnTypeFormatHandler : IDocumentOnTypeFormatHandler
+    public abstract class DocumentOnTypeFormattingHandler : IDocumentOnTypeFormattingHandler
     {
         private readonly DocumentOnTypeFormattingRegistrationOptions _options;
-        public DocumentOnTypeFormatHandler(DocumentOnTypeFormattingRegistrationOptions registrationOptions)
+        public DocumentOnTypeFormattingHandler(DocumentOnTypeFormattingRegistrationOptions registrationOptions)
         {
             _options = registrationOptions;
         }
@@ -29,9 +29,9 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DocumentOnTypeFormattingCapability Capability { get; private set; }
     }
 
-    public static class DocumentOnTypeFormatHandlerExtensions
+    public static class DocumentOnTypeFormattingExtensions
     {
-        public static IDisposable OnTypeFormatting(
+        public static IDisposable OnDocumentOnTypeFormatting(
             this ILanguageServerRegistry registry,
             Func<DocumentOnTypeFormattingParams, DocumentOnTypeFormattingCapability, CancellationToken, Task<TextEditContainer>>
                 handler,
@@ -43,7 +43,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                     DocumentOnTypeFormattingRegistrationOptions>(handler, registrationOptions));
         }
 
-        public static IDisposable OnTypeFormatting(
+        public static IDisposable OnDocumentOnTypeFormatting(
             this ILanguageServerRegistry registry,
             Func<DocumentOnTypeFormattingParams, CancellationToken, Task<TextEditContainer>> handler,
             DocumentOnTypeFormattingRegistrationOptions registrationOptions)
@@ -54,7 +54,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
                     DocumentOnTypeFormattingRegistrationOptions>(handler, registrationOptions));
         }
 
-        public static IDisposable OnTypeFormatting(
+        public static IDisposable OnDocumentOnTypeFormatting(
             this ILanguageServerRegistry registry,
             Func<DocumentOnTypeFormattingParams, Task<TextEditContainer>> handler,
             DocumentOnTypeFormattingRegistrationOptions registrationOptions)

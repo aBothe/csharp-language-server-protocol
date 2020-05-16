@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.JsonRpc
         public abstract Task<Unit> Handle(CancelParams request, CancellationToken cancellationToken);
     }
 
-    public static class CancelRequestHandlerExtensions
+    public static class CancelRequestExtensions
     {
         public static IDisposable OnCancelRequest(
             this IJsonRpcHandlerRegistry registry,

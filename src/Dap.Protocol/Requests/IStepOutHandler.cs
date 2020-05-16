@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<StepOutResponse> Handle(StepOutArguments request, CancellationToken cancellationToken);
     }
 
-    public static class StepOutHandlerExtensions
+    public static class StepOutExtensions
     {
         public static IDisposable OnStepOut(this IDebugAdapterRegistry registry,
             Func<StepOutArguments, CancellationToken, Task<StepOutResponse>> handler)

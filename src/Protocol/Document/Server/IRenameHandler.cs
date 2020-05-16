@@ -29,7 +29,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected RenameCapability Capability { get; private set; }
     }
 
-    public static class RenameHandlerExtensions
+    public static class RenameExtensions
     {
         public static IDisposable OnRename(
             this ILanguageServerRegistry registry,

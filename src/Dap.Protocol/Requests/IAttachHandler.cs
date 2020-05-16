@@ -14,7 +14,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<AttachResponse> Handle(AttachRequestArguments request, CancellationToken cancellationToken);
     }
 
-    public static class AttachHandlerExtensions
+    public static class AttachExtensions
     {
         public static IDisposable OnAttach(this IDebugAdapterRegistry registry, Func<AttachRequestArguments, CancellationToken, Task<AttachResponse>> handler)
         {

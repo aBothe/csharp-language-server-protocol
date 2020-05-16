@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<PauseResponse> Handle(PauseArguments request, CancellationToken cancellationToken);
     }
 
-    public static class PauseHandlerExtensions
+    public static class PauseExtensions
     {
         public static IDisposable OnPause(this IDebugAdapterRegistry registry,
             Func<PauseArguments, CancellationToken, Task<PauseResponse>> handler)

@@ -15,7 +15,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<ThreadsResponse> Handle(ThreadsArguments request, CancellationToken cancellationToken);
     }
 
-    public static class ThreadsHandlerExtensions
+    public static class ThreadsExtensions
     {
         public static IDisposable OnThreads(this IDebugAdapterRegistry registry,
             Func<ThreadsArguments, CancellationToken, Task<ThreadsResponse>> handler)

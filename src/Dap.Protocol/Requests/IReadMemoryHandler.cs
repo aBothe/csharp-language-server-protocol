@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class ReadMemoryHandlerExtensions
+    public static class ReadMemoryExtensions
     {
         public static IDisposable OnReadMemory(this IDebugAdapterRegistry registry,
             Func<ReadMemoryArguments, CancellationToken, Task<ReadMemoryResponse>> handler)

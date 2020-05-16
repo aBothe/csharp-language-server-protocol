@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<MessageActionItem> Handle(ShowMessageRequestParams request, CancellationToken cancellationToken);
     }
 
-    public static class ShowMessageRequestHandlerExtensions
+    public static class ShowMessageRequestExtensions
     {
         public static IDisposable OnShowMessageRequest(
             this ILanguageClientRegistry registry,

@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<RestartResponse> Handle(RestartArguments request, CancellationToken cancellationToken);
     }
 
-    public static class RestartHandlerExtensions
+    public static class RestartExtensions
     {
         public static IDisposable OnRestart(this IDebugAdapterRegistry registry,
             Func<RestartArguments, CancellationToken, Task<RestartResponse>> handler)

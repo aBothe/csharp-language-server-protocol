@@ -33,7 +33,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected ExecuteCommandCapability Capability { get; private set; }
     }
 
-    public static class ExecuteCommandHandlerExtensions
+    public static class ExecuteCommandExtensions
     {
         public static IDisposable OnExecuteCommand(
             this ILanguageServerRegistry registry,

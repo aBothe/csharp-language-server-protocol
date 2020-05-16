@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<ModulesResponse> Handle(ModulesArguments request, CancellationToken cancellationToken);
     }
 
-    public static class ModulesHandlerExtensions
+    public static class ModulesExtensions
     {
         public static IDisposable OnModules(this IDebugAdapterRegistry registry,
             Func<ModulesArguments, CancellationToken, Task<ModulesResponse>> handler)

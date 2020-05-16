@@ -22,16 +22,16 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Unit> Handle(RegistrationParams request, CancellationToken cancellationToken);
     }
 
-    public static class RegisterCapabilityHandlerExtensions
+    public static class RegisterCapabilityExtensions
     {
         public static IDisposable OnRegisterCapability(this ILanguageClientRegistry registry,
-            Func<RegistrationParams, CancellationToken, Task<Unit>> handler)
+            Func<RegistrationParams, CancellationToken, Task> handler)
         {
             return registry.AddHandler(ClientNames.RegisterCapability, RequestHandler.For(handler));
         }
 
         public static IDisposable OnRegisterCapability(this ILanguageClientRegistry registry,
-            Func<RegistrationParams, Task<Unit>> handler)
+            Func<RegistrationParams, Task> handler)
         {
             return registry.AddHandler(ClientNames.RegisterCapability, RequestHandler.For(handler));
         }

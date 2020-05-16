@@ -29,28 +29,28 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SynchronizationCapability Capability { get; private set; }
     }
 
-    public static class WillSaveWaitUntilTextDocumentHandlerExtensions
+    public static class WillSaveWaitUntilTextDocumentExtensions
     {
         public static IDisposable OnWillSaveWaitUntilTextDocument(
             this ILanguageServerRegistry registry,
-            Func<WillSaveWaitUntilTextDocumentParams, ImplementationCapability, CancellationToken, Task<TextEditContainer>>
+            Func<WillSaveWaitUntilTextDocumentParams, SynchronizationCapability, CancellationToken, Task<TextEditContainer>>
                 handler,
             TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            return registry.AddHandler(TextDocumentNames.Implementation,
-                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, ImplementationCapability,
+            return registry.AddHandler(TextDocumentNames.WillSaveWaitUntil,
+                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, SynchronizationCapability,
                     TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
 
         public static IDisposable OnWillSaveWaitUntilTextDocument(
             this ILanguageServerRegistry registry,
-            Func<WillSaveWaitUntilTextDocumentParams, ImplementationCapability, Task<TextEditContainer>> handler,
+            Func<WillSaveWaitUntilTextDocumentParams, SynchronizationCapability, Task<TextEditContainer>> handler,
             TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            return registry.AddHandler(TextDocumentNames.Implementation,
-                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, ImplementationCapability,
+            return registry.AddHandler(TextDocumentNames.WillSaveWaitUntil,
+                new LanguageProtocolDelegatingHandlers.Request<WillSaveWaitUntilTextDocumentParams, TextEditContainer, SynchronizationCapability,
                     TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
 
@@ -60,7 +60,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            return registry.AddHandler(TextDocumentNames.Implementation,
+            return registry.AddHandler(TextDocumentNames.WillSaveWaitUntil,
                 new LanguageProtocolDelegatingHandlers.RequestRegistration<WillSaveWaitUntilTextDocumentParams, TextEditContainer,
                     TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
@@ -71,7 +71,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             TextDocumentRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentRegistrationOptions();
-            return registry.AddHandler(TextDocumentNames.Implementation,
+            return registry.AddHandler(TextDocumentNames.WillSaveWaitUntil,
                 new LanguageProtocolDelegatingHandlers.RequestRegistration<WillSaveWaitUntilTextDocumentParams, TextEditContainer,
                     TextDocumentRegistrationOptions>(handler, registrationOptions));
         }

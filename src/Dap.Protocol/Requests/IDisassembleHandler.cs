@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class DisassembleHandlerExtensions
+    public static class DisassembleExtensions
     {
         public static IDisposable OnDisassemble(this IDebugAdapterRegistry registry,
             Func<DisassembleArguments, CancellationToken, Task<DisassembleResponse>> handler)

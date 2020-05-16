@@ -4,7 +4,7 @@
 
 namespace OmniSharp.Extensions.JsonRpc
 {
-    public static class CancelRequestExtensions
+    public static class JsonRpcCancelRequestExtensions
     {
         public static void CancelRequest(this IResponseRouter mediator, CancelParams @params)
         {

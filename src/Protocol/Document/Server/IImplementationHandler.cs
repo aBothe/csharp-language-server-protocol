@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         }
     }
 
-    public static class ImplementationHandlerExtensions
+    public static class ImplementationExtensions
     {
         public static IDisposable OnImplementation(
             this ILanguageServerRegistry registry,

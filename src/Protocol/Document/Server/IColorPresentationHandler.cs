@@ -30,7 +30,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected ColorProviderCapability Capability { get; private set; }
     }
 
-    public static class ColorPresentationHandlerExtensions
+    public static class ColorPresentationExtensions
     {
         public static IDisposable OnColorPresentation(
             this ILanguageServerRegistry registry,

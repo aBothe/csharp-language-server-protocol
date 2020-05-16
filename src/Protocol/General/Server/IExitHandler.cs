@@ -27,12 +27,30 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected abstract Task Handle(CancellationToken cancellationToken);
     }
 
-    public static class ExitHandlerExtensions
+    public static class ExitExtensions
     {
         public static IDisposable OnExit(this ILanguageServerRegistry registry, Action handler)
         {
             return registry.AddHandler(GeneralNames.Exit,
                 NotificationHandler.For<EmptyRequest>(_ => handler()));
+        }
+
+        public static IDisposable OnExit(this ILanguageServerRegistry registry, Func<Task> handler)
+        {
+            return registry.AddHandler(GeneralNames.Exit,
+                NotificationHandler.For<EmptyRequest>(_ => handler()));
+        }
+
+        public static IDisposable OnExit(this ILanguageServerRegistry registry, Action<CancellationToken> handler)
+        {
+            return registry.AddHandler(GeneralNames.Exit,
+                NotificationHandler.For<EmptyRequest>((_, ct) => handler(ct)));
+        }
+
+        public static IDisposable OnExit(this ILanguageServerRegistry registry, Func<CancellationToken, Task> handler)
+        {
+            return registry.AddHandler(GeneralNames.Exit,
+                NotificationHandler.For<EmptyRequest>((_, ct) => handler(ct)));
         }
     }
 }

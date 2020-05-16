@@ -301,7 +301,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             capabilities.Workspace.Configuration = _collection.ContainsHandler(typeof(IConfigurationHandler));
             capabilities.Workspace.Symbol = UseOrTryAndFindCapability(capabilities.Workspace.Symbol);
             capabilities.Workspace.ExecuteCommand = UseOrTryAndFindCapability(capabilities.Workspace.ExecuteCommand);
-            capabilities.Workspace.ApplyEdit = _collection.ContainsHandler(typeof(IApplyEditHandler));
+            capabilities.Workspace.ApplyEdit = _collection.ContainsHandler(typeof(IApplyWorkspaceEditHandler));
             capabilities.Workspace.WorkspaceEdit = UseOrTryAndFindCapability(capabilities.Workspace.WorkspaceEdit);
             capabilities.Workspace.WorkspaceFolders = _collection.ContainsHandler(typeof(IWorkspaceFoldersHandler));
             capabilities.Workspace.DidChangeConfiguration =

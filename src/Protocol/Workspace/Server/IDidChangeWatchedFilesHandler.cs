@@ -30,28 +30,94 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DidChangeWatchedFilesCapability Capability { get; private set; }
     }
 
-    public static class DidChangeWatchedFilesHandlerExtensions
+    public static class DidChangeWatchedFilesExtensions
     {
         public static IDisposable OnDidChangeWatchedFiles(
             this ILanguageServerRegistry registry,
-            Action<DidChangeWatchedFilesParams, SynchronizationCapability> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            Action<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability, CancellationToken> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
             return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
-                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, SynchronizationCapability,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeWatchedFilesParams, CancellationToken> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
         }
 
         public static IDisposable OnDidChangeWatchedFiles(
             this ILanguageServerRegistry registry,
             Action<DidChangeWatchedFilesParams> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
             return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
                 new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability, CancellationToken, Task> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability, Task> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams, DidChangeWatchedFilesCapability,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeWatchedFilesParams, CancellationToken, Task> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeWatchedFiles(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeWatchedFilesParams, Task> handler,
+            DidChangeWatchedFilesRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new DidChangeWatchedFilesRegistrationOptions();
+            return registry.AddHandler(WorkspaceNames.DidChangeWatchedFiles,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeWatchedFilesParams,
+                    DidChangeWatchedFilesRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

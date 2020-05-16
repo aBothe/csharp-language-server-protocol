@@ -29,7 +29,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected HoverCapability Capability { get; private set; }
     }
 
-    public static class HoverHandlerExtensions
+    public static class HoverExtensions
     {
         public static IDisposable OnHover(
             this ILanguageServerRegistry registry,

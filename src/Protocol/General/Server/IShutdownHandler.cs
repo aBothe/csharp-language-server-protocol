@@ -27,7 +27,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected abstract Task Handle(CancellationToken cancellationToken);
     }
 
-    public static class ShutdownHandlerExtensions
+    public static class ShutdownExtensions
     {
         public static IDisposable OnShutdown(
             this ILanguageServerRegistry registry,

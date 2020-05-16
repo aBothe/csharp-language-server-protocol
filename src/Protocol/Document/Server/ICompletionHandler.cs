@@ -37,7 +37,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected CompletionCapability Capability { get; private set; }
     }
 
-    public static class CompletionHandlerExtensions
+    public static class CompletionExtensions
     {
         public static IDisposable OnCompletion(
             this ILanguageServerRegistry registry,

@@ -65,7 +65,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     }
 
     [Obsolete(Constants.Proposal)]
-    public static class CallHierarchyHandlerExtensions
+    public static class CallHierarchyExtensions
     {
         public static IDisposable OnCallHierarchy(
             this ILanguageServerRegistry registry,

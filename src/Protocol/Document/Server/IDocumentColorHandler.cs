@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected ColorProviderCapability Capability { get; private set; }
     }
 
-    public static class DocumentColorHandlerExtensions
+    public static class DocumentColorExtensions
     {
         public static IDisposable OnDocumentColor(
             this ILanguageServerRegistry registry,

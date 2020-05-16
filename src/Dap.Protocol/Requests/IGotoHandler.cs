@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<GotoResponse> Handle(GotoArguments request, CancellationToken cancellationToken);
     }
 
-    public static class GotoHandlerExtensions
+    public static class GotoExtensions
     {
         public static IDisposable OnGoto(this IDebugAdapterRegistry registry,
             Func<GotoArguments, CancellationToken, Task<GotoResponse>> handler)

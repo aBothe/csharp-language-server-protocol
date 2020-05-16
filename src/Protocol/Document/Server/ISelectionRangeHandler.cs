@@ -39,7 +39,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SelectionRangeCapability Capability { get; private set; }
     }
 
-    public static class SelectionRangeHandlerExtensions
+    public static class SelectionRangeExtensions
     {
         public static IDisposable OnSelectionRange(
             this ILanguageServerRegistry registry,

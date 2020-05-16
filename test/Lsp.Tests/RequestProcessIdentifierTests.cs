@@ -61,7 +61,7 @@ namespace Lsp.Tests
         [InlineData(typeof(IDidOpenTextDocumentHandler))]
         [InlineData(typeof(IDidSaveTextDocumentHandler))]
         [InlineData(typeof(IDocumentFormattingHandler))]
-        [InlineData(typeof(IDocumentOnTypeFormatHandler))]
+        [InlineData(typeof(IDocumentOnTypeFormattingHandler))]
         [InlineData(typeof(IDocumentRangeFormattingHandler))]
         [InlineData(typeof(IWillSaveWaitUntilTextDocumentHandler))]
         [InlineData(typeof(IExitHandler))]

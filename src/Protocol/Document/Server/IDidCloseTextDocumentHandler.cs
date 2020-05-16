@@ -30,28 +30,94 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SynchronizationCapability Capability { get; private set; }
     }
 
-    public static class DidCloseTextDocumentHandlerExtensions
+    public static class DidCloseTextDocumentExtensions
     {
         public static IDisposable OnDidCloseTextDocument(
             this ILanguageServerRegistry registry,
-            Action<DidCloseTextDocumentParams, SynchronizationCapability> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            Action<DidCloseTextDocumentParams, SynchronizationCapability, CancellationToken> handler,
+            TextDocumentRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            registrationOptions ??= new TextDocumentRegistrationOptions();
             return registry.AddHandler(TextDocumentNames.DidClose,
                 new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams, SynchronizationCapability,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<DidCloseTextDocumentParams, SynchronizationCapability> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams, SynchronizationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<DidCloseTextDocumentParams, CancellationToken> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
 
         public static IDisposable OnDidCloseTextDocument(
             this ILanguageServerRegistry registry,
             Action<DidCloseTextDocumentParams> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            TextDocumentRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            registrationOptions ??= new TextDocumentRegistrationOptions();
             return registry.AddHandler(TextDocumentNames.DidClose,
                 new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidCloseTextDocumentParams, SynchronizationCapability, CancellationToken, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams, SynchronizationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidCloseTextDocumentParams, SynchronizationCapability, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams, SynchronizationCapability,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidCloseTextDocumentParams, CancellationToken, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidCloseTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidCloseTextDocumentParams, Task> handler,
+            TextDocumentRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidClose,
+                new LanguageProtocolDelegatingHandlers.Notification<DidCloseTextDocumentParams,
+                    TextDocumentRegistrationOptions>(handler, registrationOptions));
         }
     }
 }

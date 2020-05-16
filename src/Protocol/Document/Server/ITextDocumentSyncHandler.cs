@@ -51,7 +51,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SynchronizationCapability Capability { get; private set; }
     }
 
-    public static class TextDocumentSyncHandlerExtensions
+    public static class TextDocumentSyncExtensions
     {
         public static IDisposable OnTextDocumentSync(
             this ILanguageServerRegistry registry,

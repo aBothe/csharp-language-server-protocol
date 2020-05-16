@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class SetExpressionHandlerExtensions
+    public static class SetExpressionExtensions
     {
         public static IDisposable OnSetExpression(this IDebugAdapterRegistry registry,
             Func<SetExpressionArguments, CancellationToken, Task<SetExpressionResponse>> handler)

@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class ExceptionInfoHandlerExtensions
+    public static class ExceptionInfoExtensions
     {
         public static IDisposable OnExceptionInfo(this IDebugAdapterRegistry registry,
             Func<ExceptionInfoArguments, CancellationToken, Task<ExceptionInfoResponse>> handler)

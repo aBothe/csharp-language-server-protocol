@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class StackTraceHandlerExtensions
+    public static class StackTraceExtensions
     {
         public static IDisposable OnStackTrace(this IDebugAdapterRegistry registry,
             Func<StackTraceArguments, CancellationToken, Task<StackTraceResponse>> handler)

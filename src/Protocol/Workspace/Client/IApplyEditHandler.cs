@@ -12,14 +12,14 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 namespace OmniSharp.Extensions.LanguageServer.Client
 {
     [Parallel, Method(WorkspaceNames.ApplyEdit)]
-    public interface IApplyEditHandler : IJsonRpcRequestHandler<ApplyWorkspaceEditParams, ApplyWorkspaceEditResponse> { }
+    public interface IApplyWorkspaceEditHandler : IJsonRpcRequestHandler<ApplyWorkspaceEditParams, ApplyWorkspaceEditResponse> { }
 
-    public abstract class ApplyEditHandler : IApplyEditHandler
+    public abstract class ApplyWorkspaceEditHandler : IApplyWorkspaceEditHandler
     {
         public abstract Task<ApplyWorkspaceEditResponse> Handle(ApplyWorkspaceEditParams request, CancellationToken cancellationToken);
     }
 
-    public static class ApplyEditHandlerExtensions
+    public static class ApplyWorkspaceEditExtensions
     {
         public static IDisposable OnApplyWorkspaceEdit(
             this ILanguageClientRegistry registry,

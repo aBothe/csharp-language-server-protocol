@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Unit> Handle(ShowMessageParams request, CancellationToken cancellationToken);
     }
 
-    public static class ShowMessageHandlerExtensions
+    public static class ShowMessageExtensions
     {
         public static IDisposable OnShowMessage(
             this ILanguageServerRegistry registry,
@@ -31,7 +31,21 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public static IDisposable OnShowMessage(
             this ILanguageServerRegistry registry,
+            Action<ShowMessageParams, CancellationToken> handler)
+        {
+            return registry.AddHandler(WindowNames.ShowMessage, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnShowMessage(
+            this ILanguageServerRegistry registry,
             Func<ShowMessageParams, Task> handler)
+        {
+            return registry.AddHandler(WindowNames.ShowMessage, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnShowMessage(
+            this ILanguageServerRegistry registry,
+            Func<ShowMessageParams, CancellationToken, Task> handler)
         {
             return registry.AddHandler(WindowNames.ShowMessage, NotificationHandler.For(handler));
         }

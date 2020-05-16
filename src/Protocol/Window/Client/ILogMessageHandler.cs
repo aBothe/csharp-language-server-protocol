@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Unit> Handle(LogMessageParams request, CancellationToken cancellationToken);
     }
 
-    public static class LogMessageHandlerExtensions
+    public static class LogMessageExtensions
     {
         public static IDisposable OnLogMessage(
             this ILanguageServerRegistry registry,
@@ -31,7 +31,21 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public static IDisposable OnLogMessage(
             this ILanguageServerRegistry registry,
+            Action<LogMessageParams, CancellationToken> handler)
+        {
+            return registry.AddHandler(WindowNames.LogMessage, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnLogMessage(
+            this ILanguageServerRegistry registry,
             Func<LogMessageParams, Task> handler)
+        {
+            return registry.AddHandler(WindowNames.LogMessage, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnLogMessage(
+            this ILanguageServerRegistry registry,
+            Func<LogMessageParams, CancellationToken, Task> handler)
         {
             return registry.AddHandler(WindowNames.LogMessage, NotificationHandler.For(handler));
         }

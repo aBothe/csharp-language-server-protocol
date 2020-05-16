@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class SetVariableHandlerExtensions
+    public static class SetVariableExtensions
     {
         public static IDisposable OnSetVariable(this IDebugAdapterRegistry registry,
             Func<SetVariableArguments, CancellationToken, Task<SetVariableResponse>> handler)

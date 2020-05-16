@@ -39,7 +39,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected CodeActionCapability Capability { get; private set; }
     }
 
-    public static class CodeActionHandlerExtensions
+    public static class CodeActionExtensions
     {
         public static IDisposable OnCodeAction(
             this ILanguageServerRegistry registry,

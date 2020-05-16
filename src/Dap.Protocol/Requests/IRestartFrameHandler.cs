@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class RestartFrameHandlerExtensions
+    public static class RestartFrameExtensions
     {
         public static IDisposable OnRestartFrame(this IDebugAdapterRegistry registry,
             Func<RestartFrameArguments, CancellationToken, Task<RestartFrameResponse>> handler)

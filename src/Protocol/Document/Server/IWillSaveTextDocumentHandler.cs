@@ -30,7 +30,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SynchronizationCapability Capability { get; private set; }
     }
 
-    public static class WillSaveTextDocumentHandlerExtensions
+    public static class WillSaveTextDocumentExtensions
     {
         public static IDisposable OnWillSaveTextDocument(
             this ILanguageServerRegistry registry,

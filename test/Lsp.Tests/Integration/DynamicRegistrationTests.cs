@@ -216,7 +216,7 @@ namespace Lsp.Tests.Integration
                     AllCommitCharacters = new Container<string>("1", "2"),
                 });
 
-            options.OnSemanticTokensEdits(
+            options.OnSemanticTokens(
                 (builder, @params, ct) => { return Task.CompletedTask; },
                 (@params, token) => { return Task.FromResult(new SemanticTokensDocument(new SemanticTokensLegend())); },
                 new SemanticTokensRegistrationOptions());

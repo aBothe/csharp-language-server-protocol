@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<ContinueResponse> Handle(ContinueArguments request, CancellationToken cancellationToken);
     }
 
-    public static class ContinueHandlerExtensions
+    public static class ContinueExtensions
     {
         public static IDisposable OnContinue(this IDebugAdapterRegistry registry,
             Func<ContinueArguments, CancellationToken, Task<ContinueResponse>> handler)

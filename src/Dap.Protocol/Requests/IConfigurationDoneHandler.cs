@@ -18,7 +18,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class ConfigurationDoneHandlerExtensions
+    public static class ConfigurationDoneExtensions
     {
         public static IDisposable OnConfigurationDone(this IDebugAdapterRegistry registry,
             Func<ConfigurationDoneArguments, CancellationToken, Task<ConfigurationDoneResponse>> handler)

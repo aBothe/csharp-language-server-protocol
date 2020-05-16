@@ -6,7 +6,7 @@ using OmniSharp.Extensions.LanguageServer.Server;
 
 namespace Lsp.Tests
 {
-    internal static class ExecuteCommandSyncHandlerExtensions
+    internal static class ExecuteCommandSyncExtensions
     {
         public static IExecuteCommandHandler With(Container<string> commands)
         {

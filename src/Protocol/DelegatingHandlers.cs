@@ -837,6 +837,15 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             }
 
             public Notification(
+                Action<TParams, TCapability, CancellationToken> handler,
+                TRegistrationOptions registrationOptions) : this((request, c, ct) => {
+                handler(request, c, ct);
+                return Task.CompletedTask;
+            }, registrationOptions)
+            {
+            }
+
+            public Notification(
                 Func<TParams, TCapability, Task> handler,
                 TRegistrationOptions registrationOptions) : this((request, capability, ct) => handler(request, capability), registrationOptions)
             {
@@ -873,6 +882,15 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
                 Action<TParams> handler,
                 TRegistrationOptions registrationOptions) : this((request, ct) => {
                 handler(request);
+                return Task.CompletedTask;
+            }, registrationOptions)
+            {
+            }
+
+            public Notification(
+                Action<TParams, CancellationToken> handler,
+                TRegistrationOptions registrationOptions) : this((request, ct) => {
+                handler(request, ct);
                 return Task.CompletedTask;
             }, registrationOptions)
             {

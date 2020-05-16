@@ -22,7 +22,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public abstract Task<InitializeResult> Handle(InitializeParams request, CancellationToken cancellationToken);
     }
 
-    public static class InitializeHandlerExtensions
+    public static class InitializeExtensions
     {
         public static IDisposable OnInitialize(
             this ILanguageServerRegistry registry,

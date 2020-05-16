@@ -15,9 +15,13 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             Method = handlerType.GetCustomAttribute<MethodAttribute>().Method;
             HandlerType = handlerType;
             InterfaceType = HandlerTypeHelpers.GetHandlerInterface(handlerType);
-            ParamsType = handlerType.IsGenericType ? handlerType.GetGenericArguments()[0] : typeof(EmptyRequest);
-            HasParamsType = ParamsType != typeof(EmptyRequest);
-            IsNotification = typeof(IJsonRpcNotificationHandler).IsAssignableFrom(handlerType) || typeof(IJsonRpcNotificationHandler<>).MakeGenericType(ParamsType).IsAssignableFrom(handlerType);
+
+            ParamsType = InterfaceType.IsGenericType ? InterfaceType.GetGenericArguments()[0] : typeof(EmptyRequest);
+            HasParamsType = ParamsType != null && ParamsType != typeof(EmptyRequest);
+
+            IsNotification = typeof(IJsonRpcNotificationHandler).IsAssignableFrom(handlerType) || handlerType
+                .GetInterfaces().Any(z =>
+                    z.IsGenericType && typeof(IJsonRpcNotificationHandler<>).IsAssignableFrom(z));
             IsRequest = !IsNotification;
 
             var requestInterface = ParamsType?
@@ -25,12 +29,15 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IRequest<>));
             if (requestInterface != null)
                 ResponseType = requestInterface.GetGenericArguments()[0];
-            HasResponseType = ResponseType != null;
+            HasResponseType = ResponseType != null && ResponseType != typeof(Unit);
             RegistrationType = HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handlerType);
-            HasRegistration = RegistrationType != null;
+            HasRegistration = RegistrationType != null && RegistrationType != typeof(object);
+            if (!HasRegistration) RegistrationType = null;
             CapabilityType = HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handlerType);
             HasCapability = CapabilityType != null;
-            IsDynamicCapability = typeof(IDynamicCapability).GetTypeInfo().IsAssignableFrom(CapabilityType);
+            if (!HasCapability) CapabilityType = null;
+            if (HasCapability)
+                IsDynamicCapability = typeof(IDynamicCapability).GetTypeInfo().IsAssignableFrom(CapabilityType);
             RequestProcessType = HandlerType
                 .GetCustomAttributes(true)
                 .Concat(HandlerType.GetCustomAttributes(true))

@@ -18,7 +18,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Window.Server
         public abstract Task<Unit> Handle(WorkDoneProgressCreateParams request, CancellationToken cancellationToken);
     }
 
-    public static class WorkDoneProgressCreateHandlerExtensions
+    public static class WorkDoneProgressCreateExtensions
     {
         public static IDisposable OnWorkDoneProgressCreate(
             this ILanguageClientRegistry registry,

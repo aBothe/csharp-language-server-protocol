@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             Handle(LaunchRequestArguments request, CancellationToken cancellationToken);
     }
 
-    public static class LaunchHandlerExtensions
+    public static class LaunchExtensions
     {
         public static IDisposable OnLaunch(this IDebugAdapterRegistry registry,
             Func<LaunchRequestArguments, CancellationToken, Task<LaunchResponse>> handler)

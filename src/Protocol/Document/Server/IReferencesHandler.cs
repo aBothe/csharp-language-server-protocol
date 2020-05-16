@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected ReferenceCapability Capability { get; private set; }
     }
 
-    public static class ReferencesHandlerExtensions
+    public static class ReferencesExtensions
     {
         public static IDisposable OnReferences(
             this ILanguageServerRegistry registry,

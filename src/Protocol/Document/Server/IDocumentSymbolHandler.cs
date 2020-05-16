@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DocumentSymbolCapability Capability { get; private set; }
     }
 
-    public static class DocumentSymbolHandlerExtensions
+    public static class DocumentSymbolExtensions
     {
         public static IDisposable OnDocumentSymbol(
             this ILanguageServerRegistry registry,

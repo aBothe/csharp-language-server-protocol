@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<StepBackResponse> Handle(StepBackArguments request, CancellationToken cancellationToken);
     }
 
-    public static class StepBackHandlerExtensions
+    public static class StepBackExtensions
     {
         public static IDisposable OnStepBack(this IDebugAdapterRegistry registry,
             Func<StepBackArguments, CancellationToken, Task<StepBackResponse>> handler)

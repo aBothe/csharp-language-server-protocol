@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class LoadedSourcesHandlerExtensions
+    public static class LoadedSourcesExtensions
     {
         public static IDisposable OnLoadedSources(this IDebugAdapterRegistry registry,
             Func<LoadedSourcesArguments, CancellationToken, Task<LoadedSourcesResponse>> handler)

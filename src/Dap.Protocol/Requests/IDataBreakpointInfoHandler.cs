@@ -18,7 +18,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class DataBreakpointInfoHandlerExtensions
+    public static class DataBreakpointInfoExtensions
     {
         public static IDisposable OnDataBreakpointInfo(this IDebugAdapterRegistry registry,
             Func<DataBreakpointInfoArguments, CancellationToken, Task<DataBreakpointInfoResponse>> handler)

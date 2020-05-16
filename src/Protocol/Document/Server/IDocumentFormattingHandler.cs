@@ -29,7 +29,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DocumentFormattingCapability Capability { get; private set; }
     }
 
-    public static class DocumentFormattingHandlerExtensions
+    public static class DocumentFormattingExtensions
     {
         public static IDisposable OnDocumentFormatting(
             this ILanguageServerRegistry registry,

@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Unit> Handle(TelemetryEventParams request, CancellationToken cancellationToken);
     }
 
-    public static class TelemetryEventHandlerExtensions
+    public static class TelemetryEventExtensions
     {
         public static IDisposable OnTelemetryEvent(
             this ILanguageClientRegistry registry,
@@ -31,7 +31,21 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public static IDisposable OnTelemetryEvent(
             this ILanguageClientRegistry registry,
+            Action<TelemetryEventParams, CancellationToken> handler)
+        {
+            return registry.AddHandler(WindowNames.TelemetryEvent, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnTelemetryEvent(
+            this ILanguageClientRegistry registry,
             Func<TelemetryEventParams, Task> handler)
+        {
+            return registry.AddHandler(WindowNames.TelemetryEvent, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnTelemetryEvent(
+            this ILanguageClientRegistry registry,
+            Func<TelemetryEventParams, CancellationToken, Task> handler)
         {
             return registry.AddHandler(WindowNames.TelemetryEvent, NotificationHandler.For(handler));
         }

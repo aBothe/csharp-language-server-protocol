@@ -14,7 +14,10 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 namespace OmniSharp.Extensions.LanguageServer.Server
 {
     [Serial, Method(WorkspaceNames.DidChangeConfiguration)]
-    public interface IDidChangeConfigurationHandler : IJsonRpcNotificationHandler<DidChangeConfigurationParams>, IRegistration<object>, ICapability<DidChangeConfigurationCapability> { }
+    public interface IDidChangeConfigurationHandler : IJsonRpcNotificationHandler<DidChangeConfigurationParams>,
+        IRegistration<object>, ICapability<DidChangeConfigurationCapability>
+    {
+    }
 
     public abstract class DidChangeConfigurationHandler : IDidChangeConfigurationHandler
     {
@@ -24,28 +27,73 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DidChangeConfigurationCapability Capability { get; private set; }
     }
 
-    public static class DidChangeConfigurationHandlerExtensions
+    public static class DidChangeConfigurationExtensions
     {
         public static IDisposable OnDidChangeConfiguration(
             this ILanguageServerRegistry registry,
-            Action<DidChangeConfigurationParams, SynchronizationCapability> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            Action<DidChangeConfigurationParams, DidChangeConfigurationCapability, CancellationToken> handler)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
             return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
-                new LanguageProtocolDelegatingHandlers.Notification<DidChangeConfigurationParams, SynchronizationCapability,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                new LanguageProtocolDelegatingHandlers.NotificationCapability<DidChangeConfigurationParams,
+                    DidChangeConfigurationCapability>((r, c, ct) => {
+                    handler(r, c, ct);
+                    return Task.CompletedTask;
+                }));
         }
 
         public static IDisposable OnDidChangeConfiguration(
             this ILanguageServerRegistry registry,
-            Action<DidChangeConfigurationParams> handler,
-            TextDocumentChangeRegistrationOptions registrationOptions)
+            Action<DidChangeConfigurationParams, DidChangeConfigurationCapability> handler)
         {
-            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
             return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
-                new LanguageProtocolDelegatingHandlers.Notification<DidChangeConfigurationParams,
-                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+                new LanguageProtocolDelegatingHandlers.NotificationCapability<DidChangeConfigurationParams,
+                    DidChangeConfigurationCapability>(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeConfigurationParams, CancellationToken> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeConfigurationParams> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeConfigurationParams, DidChangeConfigurationCapability, CancellationToken, Task> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
+                new LanguageProtocolDelegatingHandlers.NotificationCapability<DidChangeConfigurationParams,
+                    DidChangeConfigurationCapability>(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeConfigurationParams, DidChangeConfigurationCapability, Task> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration,
+                new LanguageProtocolDelegatingHandlers.NotificationCapability<DidChangeConfigurationParams,
+                    DidChangeConfigurationCapability>(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeConfigurationParams, CancellationToken, Task> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration, NotificationHandler.For(handler));
+        }
+
+        public static IDisposable OnDidChangeConfiguration(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeConfigurationParams, Task> handler)
+        {
+            return registry.AddHandler(WorkspaceNames.DidChangeConfiguration, NotificationHandler.For(handler));
         }
     }
 }

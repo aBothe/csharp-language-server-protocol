@@ -141,9 +141,10 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
 
         private LspHandlerDescriptor GetDescriptor(string method, Type handlerType, IJsonRpcHandler handler)
         {
+            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(method);
             var @interface = HandlerTypeHelpers.GetHandlerInterface(handlerType);
-            var registrationType = HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handler.GetType());
-            var capabilityType = HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handler.GetType());
+            var registrationType = typeDescriptor?.RegistrationType ?? HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handlerType);
+            var capabilityType = typeDescriptor?.CapabilityType ?? HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handlerType);
 
             Type @params = null;
             object registrationOptions = null;
@@ -170,7 +171,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
                 // In some scenarios, users will implement both the main handler and the resolve handler to the same class
                 // This allows us to get a key for those interfaces so we can register many resolve handlers
                 // and then route those resolve requests to the correct handler
-                if (handlerType.GetTypeInfo().ImplementedInterfaces.Any(x => x.GetTypeInfo().IsGenericType && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICanBeResolvedHandler<>)))
+                if (handler.GetType().GetTypeInfo().ImplementedInterfaces.Any(x => x.GetTypeInfo().IsGenericType && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICanBeResolvedHandler<>)))
                 {
                     key = handlerRegistration?.GetRegistrationOptions()?.DocumentSelector ?? key;
                 }
@@ -187,7 +188,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
                 registrationType,
                 registrationOptions,
                 registrationType != null && _supportedCapabilities.AllowsDynamicRegistration(capabilityType),
-                capabilityType,
+                 capabilityType?.IsInstanceOfType(handler) == true ? capabilityType : null,
                 () => {
                     _handlers.RemoveWhere(d => d.Handler == handler);
                 });

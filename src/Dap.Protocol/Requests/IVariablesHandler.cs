@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<VariablesResponse> Handle(VariablesArguments request, CancellationToken cancellationToken);
     }
 
-    public static class VariablesHandlerExtensions
+    public static class VariablesExtensions
     {
         public static IDisposable OnVariables(this IDebugAdapterRegistry registry,
             Func<VariablesArguments, CancellationToken, Task<VariablesResponse>> handler)

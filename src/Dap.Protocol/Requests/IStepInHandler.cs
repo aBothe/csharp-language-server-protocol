@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<StepInResponse> Handle(StepInArguments request, CancellationToken cancellationToken);
     }
 
-    public static class StepInHandlerExtensions
+    public static class StepInExtensions
     {
         public static IDisposable OnStepIn(this IDebugAdapterRegistry registry,
             Func<StepInArguments, CancellationToken, Task<StepInResponse>> handler)

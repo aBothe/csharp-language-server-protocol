@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DefinitionCapability Capability { get; private set; }
     }
 
-    public static class DefinitionHandlerExtensions
+    public static class DefinitionExtensions
     {
         public static IDisposable OnDefinition(
             this ILanguageServerRegistry registry,

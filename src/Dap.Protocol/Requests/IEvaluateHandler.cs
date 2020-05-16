@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<EvaluateResponse> Handle(EvaluateArguments request, CancellationToken cancellationToken);
     }
 
-    public static class EvaluateHandlerExtensions
+    public static class EvaluateExtensions
     {
         public static IDisposable OnEvaluate(this IDebugAdapterRegistry registry,
             Func<EvaluateArguments, CancellationToken, Task<EvaluateResponse>> handler)

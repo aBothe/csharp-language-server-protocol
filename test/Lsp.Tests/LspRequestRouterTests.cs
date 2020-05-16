@@ -36,7 +36,8 @@ namespace Lsp.Tests
 
         public IDisposable AddHandler(string method, IJsonRpcHandler handler)
         {
-            throw new NotImplementedException();
+            Handlers.Add(handler);
+            return Disposable.Empty;
         }
 
         public IDisposable AddHandler<T>() where T : IJsonRpcHandler

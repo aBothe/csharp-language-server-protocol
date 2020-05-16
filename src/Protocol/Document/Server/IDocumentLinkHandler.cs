@@ -52,7 +52,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DocumentLinkCapability Capability { get; private set; }
     }
 
-    public static class DocumentLinkHandlerExtensions
+    public static class DocumentLinkExtensions
     {
         public static IDisposable OnDocumentLink(
             this ILanguageServerRegistry registry,

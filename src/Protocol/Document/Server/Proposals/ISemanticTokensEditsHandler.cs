@@ -85,9 +85,9 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
     }
 
     [Obsolete(Constants.Proposal)]
-    public static class SemanticTokensEditsHandlerExtensions
+    public static class SemanticTokensExtensions
     {
-        public static IDisposable OnSemanticTokensEdits(
+        public static IDisposable OnSemanticTokens(
             this ILanguageServerRegistry registry,
             Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, SemanticTokensCapability, CancellationToken, Task
             > tokenize,
@@ -111,7 +111,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
                 new DelegatingHandler(tokenize, getSemanticTokensDocument, registrationOptions));
         }
 
-        public static IDisposable OnSemanticTokensEdits(
+        public static IDisposable OnSemanticTokens(
             this ILanguageServerRegistry registry,
             Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, CancellationToken, Task
             > tokenize,
@@ -120,11 +120,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
                 getSemanticTokensDocument,
             SemanticTokensRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new SemanticTokensRegistrationOptions() {
-                DocumentProvider =
-                    new Supports<SemanticTokensDocumentProviderOptions>(true,
-                        new SemanticTokensDocumentProviderOptions() { })
-            };
+            registrationOptions ??= new SemanticTokensRegistrationOptions();
+            registrationOptions.DocumentProvider =
+                new Supports<SemanticTokensDocumentProviderOptions>(true,
+                    new SemanticTokensDocumentProviderOptions() { });
             registrationOptions.RangeProvider = true;
             if (registrationOptions.DocumentProvider != null)
             {
@@ -138,7 +137,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
                     registrationOptions));
         }
 
-        public static IDisposable OnSemanticTokensEdits(
+        public static IDisposable OnSemanticTokens(
             this ILanguageServerRegistry registry,
             Func<SemanticTokensBuilder, ITextDocumentIdentifierParams, Task
             > tokenize,
@@ -147,11 +146,10 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals
                 getSemanticTokensDocument,
             SemanticTokensRegistrationOptions registrationOptions)
         {
-            registrationOptions ??= new SemanticTokensRegistrationOptions() {
-                DocumentProvider =
-                    new Supports<SemanticTokensDocumentProviderOptions>(true,
-                        new SemanticTokensDocumentProviderOptions() { })
-            };
+            registrationOptions ??= new SemanticTokensRegistrationOptions();
+            registrationOptions.DocumentProvider =
+                new Supports<SemanticTokensDocumentProviderOptions>(true,
+                    new SemanticTokensDocumentProviderOptions() { });
             registrationOptions.RangeProvider = true;
             if (registrationOptions.DocumentProvider != null)
             {

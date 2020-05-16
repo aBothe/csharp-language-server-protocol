@@ -17,7 +17,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
             CancellationToken cancellationToken);
     }
 
-    public static class ReverseContinueHandlerExtensions
+    public static class ReverseContinueExtensions
     {
         public static IDisposable OnReverseContinue(this IDebugAdapterRegistry registry,
             Func<ReverseContinueArguments, CancellationToken, Task<ReverseContinueResponse>> handler)

@@ -20,7 +20,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
         public abstract Task<Container<JToken>> Handle(ConfigurationParams request, CancellationToken cancellationToken);
     }
 
-    public static class ConfigurationHandlerExtensions
+    public static class ConfigurationExtensions
     {
         public static IDisposable OnConfiguration(
             this ILanguageClientRegistry registry,

@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected DocumentHighlightCapability Capability { get; private set; }
     }
 
-    public static class DocumentHighlightHandlerExtensions
+    public static class DocumentHighlightExtensions
     {
         public static IDisposable OnDocumentHighlight(
             this ILanguageServerRegistry registry,

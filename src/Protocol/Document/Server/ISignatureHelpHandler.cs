@@ -29,7 +29,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SignatureHelpCapability Capability { get; private set; }
     }
 
-    public static class SignatureHelpHandlerExtensions
+    public static class SignatureHelpExtensions
     {
         public static IDisposable OnSignatureHelp(
             this ILanguageServerRegistry registry,

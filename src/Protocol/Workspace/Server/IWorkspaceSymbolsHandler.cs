@@ -31,7 +31,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public virtual void SetCapability(WorkspaceSymbolCapability capability) => Capability = capability;
     }
 
-    public static class WorkspaceSymbolsHandlerExtensions
+    public static class WorkspaceSymbolsExtensions
     {
         public static IDisposable OnWorkspaceSymbols(
             this ILanguageServerRegistry registry,

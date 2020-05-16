@@ -32,8 +32,19 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         protected SynchronizationCapability Capability { get; private set; }
     }
 
-    public static class DidChangeTextDocumentHandlerExtensions
+    public static class DidChangeTextDocumentExtensions
     {
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
+            Action<DidChangeTextDocumentParams, SynchronizationCapability, CancellationToken> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+
         public static IDisposable OnDidChangeTextDocument(
             this ILanguageServerRegistry registry,
             Action<DidChangeTextDocumentParams, SynchronizationCapability> handler,
@@ -47,7 +58,61 @@ namespace OmniSharp.Extensions.LanguageServer.Server
 
         public static IDisposable OnDidChangeTextDocument(
             this ILanguageServerRegistry registry,
+            Action<DidChangeTextDocumentParams, CancellationToken> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
             Action<DidChangeTextDocumentParams> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeTextDocumentParams, SynchronizationCapability, CancellationToken, Task> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeTextDocumentParams, SynchronizationCapability, Task> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams, SynchronizationCapability,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeTextDocumentParams, CancellationToken, Task> handler,
+            TextDocumentChangeRegistrationOptions registrationOptions)
+        {
+            registrationOptions ??= new TextDocumentChangeRegistrationOptions();
+            return registry.AddHandler(TextDocumentNames.DidChange,
+                new LanguageProtocolDelegatingHandlers.Notification<DidChangeTextDocumentParams,
+                    TextDocumentChangeRegistrationOptions>(handler, registrationOptions));
+        }
+
+        public static IDisposable OnDidChangeTextDocument(
+            this ILanguageServerRegistry registry,
+            Func<DidChangeTextDocumentParams, Task> handler,
             TextDocumentChangeRegistrationOptions registrationOptions)
         {
             registrationOptions ??= new TextDocumentChangeRegistrationOptions();
