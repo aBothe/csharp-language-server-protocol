@@ -3,7 +3,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.Declaration)]
+    [Method(TextDocumentNames.Declaration, Direction.ClientToServer)]
     public class DeclarationParams : WorkDoneTextDocumentPositionParams, IRequest<LocationOrLocationLinks>, IPartialItems<LocationLink>
     {
         /// <inheritdoc />

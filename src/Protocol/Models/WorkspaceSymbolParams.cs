@@ -7,7 +7,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
     /// <summary>
     /// The parameters of a Workspace Symbol Request.
     /// </summary>
-    [Method(WorkspaceNames.WorkspaceSymbol)]
+    [Method(WorkspaceNames.WorkspaceSymbol, Direction.ClientToServer)]
     public class WorkspaceSymbolParams : IRequest<Container<SymbolInformation>>, IWorkDoneProgressParams, IPartialItems<SymbolInformation>
     {
         /// <summary>

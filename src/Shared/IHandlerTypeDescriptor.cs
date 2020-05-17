@@ -6,6 +6,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
     public interface IHandlerTypeDescriptor
     {
         string Method { get; }
+        Direction Direction { get; }
         RequestProcessType? RequestProcessType { get; }
         Type InterfaceType { get; }
         bool IsNotification {get;}

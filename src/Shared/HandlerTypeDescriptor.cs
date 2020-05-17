@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using MediatR;
@@ -8,20 +9,23 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 
 namespace OmniSharp.Extensions.LanguageServer.Shared
 {
+    [DebuggerDisplay("{" + nameof(Method) + "}")]
     class HandlerTypeDescriptor : IHandlerTypeDescriptor
     {
         public HandlerTypeDescriptor(Type handlerType)
         {
-            Method = handlerType.GetCustomAttribute<MethodAttribute>().Method;
+            var method = handlerType.GetCustomAttribute<MethodAttribute>();
+            Method = method.Method;
+            Direction = method.Direction;
             HandlerType = handlerType;
-            InterfaceType = HandlerTypeHelpers.GetHandlerInterface(handlerType);
+            InterfaceType = HandlerTypeDescriptorHelper.GetHandlerInterface(handlerType);
 
             ParamsType = InterfaceType.IsGenericType ? InterfaceType.GetGenericArguments()[0] : typeof(EmptyRequest);
             HasParamsType = ParamsType != null && ParamsType != typeof(EmptyRequest);
 
             IsNotification = typeof(IJsonRpcNotificationHandler).IsAssignableFrom(handlerType) || handlerType
                 .GetInterfaces().Any(z =>
-                    z.IsGenericType && typeof(IJsonRpcNotificationHandler<>).IsAssignableFrom(z));
+                    z.IsGenericType && typeof(IJsonRpcNotificationHandler<>).IsAssignableFrom(z.GetGenericTypeDefinition()));
             IsRequest = !IsNotification;
 
             var requestInterface = ParamsType?
@@ -30,10 +34,10 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             if (requestInterface != null)
                 ResponseType = requestInterface.GetGenericArguments()[0];
             HasResponseType = ResponseType != null && ResponseType != typeof(Unit);
-            RegistrationType = HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handlerType);
+            RegistrationType = HandlerTypeDescriptorHelper.UnwrapGenericType(typeof(IRegistration<>), handlerType);
             HasRegistration = RegistrationType != null && RegistrationType != typeof(object);
             if (!HasRegistration) RegistrationType = null;
-            CapabilityType = HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handlerType);
+            CapabilityType = HandlerTypeDescriptorHelper.UnwrapGenericType(typeof(ICapability<>), handlerType);
             HasCapability = CapabilityType != null;
             if (!HasCapability) CapabilityType = null;
             if (HasCapability)
@@ -48,6 +52,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
         }
 
         public string Method { get; }
+        public Direction Direction { get; }
         public RequestProcessType? RequestProcessType { get; }
         public bool IsRequest { get; }
         public Type HandlerType { get; }
@@ -62,5 +67,6 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
         public bool HasCapability { get; }
         public Type CapabilityType { get; }
         public bool IsDynamicCapability { get; }
+        public override string ToString() => $"{Method}";
     }
 }

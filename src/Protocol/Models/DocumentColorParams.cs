@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.DocumentColor)]
+    [Method(TextDocumentNames.DocumentColor, Direction.ClientToServer)]
     public class DocumentColorParams : IRequest<Container<ColorPresentation>>, IWorkDoneProgressParams, IPartialItems<ColorPresentation>
     {
         /// <summary>

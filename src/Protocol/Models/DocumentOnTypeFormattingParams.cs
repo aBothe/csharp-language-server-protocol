@@ -4,7 +4,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.OnTypeFormatting)]
+    [Method(TextDocumentNames.OnTypeFormatting, Direction.ClientToServer)]
     public class DocumentOnTypeFormattingParams : ITextDocumentIdentifierParams, IRequest<TextEditContainer>
     {
         /// <summary>

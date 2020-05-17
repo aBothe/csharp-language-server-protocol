@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.DidSave)]
+    [Method(TextDocumentNames.DidSave, Direction.ClientToServer)]
     public class DidSaveTextDocumentParams : ITextDocumentIdentifierParams, IRequest
     {
         /// <summary>

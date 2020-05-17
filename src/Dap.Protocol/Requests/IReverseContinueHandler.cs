@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.ReverseContinue)]
+    [Parallel, Method(RequestNames.ReverseContinue, Direction.ClientToServer)]
     public interface IReverseContinueHandler : IJsonRpcRequestHandler<ReverseContinueArguments, ReverseContinueResponse>
     {
     }

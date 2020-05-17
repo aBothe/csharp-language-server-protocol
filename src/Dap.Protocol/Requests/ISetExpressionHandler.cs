@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.SetExpression)]
+    [Parallel, Method(RequestNames.SetExpression, Direction.ClientToServer)]
     public interface ISetExpressionHandler : IJsonRpcRequestHandler<SetExpressionArguments, SetExpressionResponse>
     {
     }

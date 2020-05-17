@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using OmniSharp.Extensions.DebugAdapter.Protocol.Models;
 using OmniSharp.Extensions.DebugAdapter.Protocol.Serialization;
 using MediatR;
+using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
+    [Method(RequestNames.RunInTerminal, Direction.ServerToClient)]
     public class RunInTerminalArguments : IRequest<RunInTerminalResponse>
     {
         /// <summary>

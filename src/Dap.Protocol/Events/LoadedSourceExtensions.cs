@@ -4,7 +4,7 @@
     {
         public static void SendLoadedSource(this IDebugClient mediator, LoadedSourceEvent @event)
         {
-            mediator.SendNotification(EventNames.LoadedSource, @event);
+            mediator.SendNotification(@event);
         }
     }
 }

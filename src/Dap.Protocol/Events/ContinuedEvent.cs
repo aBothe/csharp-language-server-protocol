@@ -1,8 +1,10 @@
 using OmniSharp.Extensions.DebugAdapter.Protocol.Serialization;
 using MediatR;
+using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Events
 {
+    [Method(EventNames.Continued)]
     public class ContinuedEvent : IRequest
     {
         /// <summary>

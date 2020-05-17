@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.StepOut)]
+    [Parallel, Method(RequestNames.StepOut, Direction.ClientToServer)]
     public interface IStepOutHandler : IJsonRpcRequestHandler<StepOutArguments, StepOutResponse>
     {
     }

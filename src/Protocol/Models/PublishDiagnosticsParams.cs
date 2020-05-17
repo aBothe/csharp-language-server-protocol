@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.PublishDiagnostics)]
+    [Method(TextDocumentNames.PublishDiagnostics, Direction.ServerToClient)]
     public class PublishDiagnosticsParams : IRequest
     {
         /// <summary>

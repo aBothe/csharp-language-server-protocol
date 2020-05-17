@@ -3,7 +3,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.ColorPresentation)]
+    [Method(TextDocumentNames.ColorPresentation, Direction.ClientToServer)]
     public class ColorPresentationParams : IRequest<Container<ColorPresentation>>
     {
         /// <summary>

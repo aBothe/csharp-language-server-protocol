@@ -1,7 +1,9 @@
 using MediatR;
+using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
+[Method(RequestNames.ExceptionInfo)]
     public class ExceptionInfoArguments : IRequest<ExceptionInfoResponse>
     {
         /// <summary>

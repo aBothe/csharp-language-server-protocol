@@ -4,7 +4,7 @@
     {
         public static void SendModule(this IDebugClient mediator, ModuleEvent @event)
         {
-            mediator.SendNotification(EventNames.Module, @event);
+            mediator.SendNotification(@event);
         }
     }
 }

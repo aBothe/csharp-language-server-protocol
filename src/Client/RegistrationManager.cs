@@ -7,6 +7,7 @@ using MediatR;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Shared;
@@ -53,7 +54,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
                 foreach (var registrationOptions in LspHandlerDescriptorHelpers.GetStaticRegistrationOptions(
                     serverCapabilities))
                 {
-                    var descriptor = HandlerTypeHelper.GetHandlerTypeForRegistrationOptions(registrationOptions);
+                    var descriptor = HandlerTypeDescriptorHelper.GetHandlerTypeForRegistrationOptions(registrationOptions);
                     if (descriptor == null)
                     {
                         // TODO: Log this
@@ -72,7 +73,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
                 foreach (var registrationOptions in LspHandlerDescriptorHelpers.GetStaticRegistrationOptions(serverCapabilities
                     .Workspace))
                 {
-                    var descriptor = HandlerTypeHelper.GetHandlerTypeForRegistrationOptions(registrationOptions);
+                    var descriptor = HandlerTypeDescriptorHelper.GetHandlerTypeForRegistrationOptions(registrationOptions);
                     if (descriptor == null)
                     {
                         // TODO: Log this
@@ -101,7 +102,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         private void Register(Registration registration, ISourceUpdater<Registration, string> updater)
         {
-            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(registration.Method);
+            var typeDescriptor = HandlerTypeDescriptorHelper.GetHandlerTypeDescriptor(registration.Method);
             if (typeDescriptor == null)
             {
                 updater.AddOrUpdate(registration);

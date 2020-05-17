@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Launch)]
+    [Parallel, Method(RequestNames.Launch, Direction.ClientToServer)]
     public interface ILaunchHandler : IJsonRpcRequestHandler<LaunchRequestArguments, LaunchResponse>
     {
     }

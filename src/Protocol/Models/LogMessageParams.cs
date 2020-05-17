@@ -3,7 +3,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(WindowNames.LogMessage)]
+    [Method(WindowNames.LogMessage, Direction.ServerToClient)]
     public class LogMessageParams : IRequest
     {
         /// <summary>

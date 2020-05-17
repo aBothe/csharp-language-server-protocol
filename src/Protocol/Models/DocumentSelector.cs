@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {

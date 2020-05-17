@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.JsonRpc.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.General;
 using OmniSharp.Extensions.LanguageServer.Server.Messages;
 using OmniSharp.Extensions.LanguageServer.Shared;
 
@@ -21,7 +22,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             var (results, hasResponse) = base.GetRequests(container);
             foreach (var item in results)
             {
-                if (item.IsRequest && HandlerTypeHelper.IsMethodName(item.Request.Method, typeof(IInitializeHandler)))
+                if (item.IsRequest && HandlerTypeDescriptorHelper.IsMethodName(item.Request.Method, typeof(IInitializeHandler)))
                 {
                     newResults.Add(item);
                 }

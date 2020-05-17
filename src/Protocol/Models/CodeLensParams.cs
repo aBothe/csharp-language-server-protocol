@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.CodeLens)]
+    [Method(TextDocumentNames.CodeLens, Direction.ClientToServer)]
     public class CodeLensParams : ITextDocumentIdentifierParams, IRequest<CodeLensContainer>, IWorkDoneProgressParams, IPartialItems<CodeLens>
     {
         /// <summary>

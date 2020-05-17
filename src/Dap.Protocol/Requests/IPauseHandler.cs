@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Pause)]
+    [Parallel, Method(RequestNames.Pause, Direction.ClientToServer)]
     public interface IPauseHandler : IJsonRpcRequestHandler<PauseArguments, PauseResponse>
     {
     }

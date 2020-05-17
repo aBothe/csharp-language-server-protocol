@@ -89,7 +89,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             {
                 foreach (var (method, implementedInterface) in handlerType.GetTypeInfo()
                     .ImplementedInterfaces
-                    .Select(x => (method: HandlerTypeHelper.GetMethodName(x), implementedInterface: x))
+                    .Select(x => (method: HandlerTypeDescriptorHelper.GetMethodName(x), implementedInterface: x))
                     .Where(x => !string.IsNullOrWhiteSpace(x.method)))
                 {
                     var descriptor = GetDescriptor(method, implementedInterface, _serviceProvider);
@@ -115,7 +115,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
 
                 foreach (var (method, implementedInterface) in handler.GetType().GetTypeInfo()
                     .ImplementedInterfaces
-                    .Select(x => (method: HandlerTypeHelper.GetMethodName(x), implementedInterface: x))
+                    .Select(x => (method: HandlerTypeDescriptorHelper.GetMethodName(x), implementedInterface: x))
                     .Where(x => !string.IsNullOrWhiteSpace(x.method)))
                 {
                     var descriptor = GetDescriptor(method, implementedInterface, handler);
@@ -141,10 +141,10 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
 
         private LspHandlerDescriptor GetDescriptor(string method, Type handlerType, IJsonRpcHandler handler)
         {
-            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(method);
-            var @interface = HandlerTypeHelpers.GetHandlerInterface(handlerType);
-            var registrationType = typeDescriptor?.RegistrationType ?? HandlerTypeHelpers.UnwrapGenericType(typeof(IRegistration<>), handlerType);
-            var capabilityType = typeDescriptor?.CapabilityType ?? HandlerTypeHelpers.UnwrapGenericType(typeof(ICapability<>), handlerType);
+            var typeDescriptor = HandlerTypeDescriptorHelper.GetHandlerTypeDescriptor(method);
+            var @interface = HandlerTypeDescriptorHelper.GetHandlerInterface(handlerType);
+            var registrationType = typeDescriptor?.RegistrationType ?? HandlerTypeDescriptorHelper.UnwrapGenericType(typeof(IRegistration<>), handlerType);
+            var capabilityType = typeDescriptor?.CapabilityType ?? HandlerTypeDescriptorHelper.UnwrapGenericType(typeof(ICapability<>), handlerType);
 
             Type @params = null;
             object registrationOptions = null;

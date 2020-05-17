@@ -21,6 +21,7 @@ using Serializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Se
 using System.Reactive.Disposables;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.General;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Shared;
 
@@ -294,7 +295,7 @@ namespace Lsp.Tests
         {
             var handler = Substitute.For<IShutdownHandler>();
             handler
-                .Handle(Arg.Any<EmptyRequest>(), Arg.Any<CancellationToken>())
+                .Handle(Arg.Any<ShutdownParams>(), Arg.Any<CancellationToken>())
                 .Returns(Unit.Value);
 
             var collection =
@@ -309,7 +310,7 @@ namespace Lsp.Tests
 
             await mediator.RouteRequest(mediator.GetDescriptor(request), request, CancellationToken.None);
 
-            await handler.Received(1).Handle(Arg.Any<EmptyRequest>(), Arg.Any<CancellationToken>());
+            await handler.Received(1).Handle(Arg.Any<ShutdownParams>(), Arg.Any<CancellationToken>());
         }
 
         [Fact]

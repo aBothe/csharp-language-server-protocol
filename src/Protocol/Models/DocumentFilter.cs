@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Minimatch;
 using Newtonsoft.Json;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models

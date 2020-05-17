@@ -12,6 +12,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Client
         InitializeResult ServerSettings { get; }
         ITextDocumentLanguageClient TextDocument { get; }
         IClientLanguageClient Client { get; }
+        IGeneralLanguageClient General { get; }
         IWindowLanguageClient Window { get; }
         IWorkspaceLanguageClient Workspace { get; }
         IProgressManager ProgressManager { get; }

@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Next)]
+    [Parallel, Method(RequestNames.Next, Direction.ClientToServer)]
     public interface INextHandler : IJsonRpcRequestHandler<NextArguments, NextResponse>
     {
     }
@@ -16,7 +16,7 @@ namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
         public abstract Task<NextResponse> Handle(NextArguments request, CancellationToken cancellationToken);
     }
 
-    public static class NextHandlerExtensions
+    public static class NextExtensions
     {
         public static IDisposable OnNext(this IDebugAdapterRegistry registry,
             Func<NextArguments, CancellationToken, Task<NextResponse>> handler)

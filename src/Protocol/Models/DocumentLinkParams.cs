@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.DocumentLink)]
+    [Method(TextDocumentNames.DocumentLink, Direction.ClientToServer)]
     public class DocumentLinkParams : ITextDocumentIdentifierParams, IRequest<DocumentLinkContainer>, IWorkDoneProgressParams, IPartialItems<DocumentLink>
     {
         /// <summary>

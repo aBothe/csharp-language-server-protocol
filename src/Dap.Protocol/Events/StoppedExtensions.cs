@@ -4,7 +4,7 @@
     {
         public static void SendStopped(this IDebugClient mediator, StoppedEvent @event)
         {
-            mediator.SendNotification(EventNames.Stopped, @event);
+            mediator.SendNotification(@event);
         }
     }
 }

@@ -3,7 +3,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.DidChange)]
+    [Method(TextDocumentNames.DidChange, Direction.ClientToServer)]
     public class DidChangeTextDocumentParams : IRequest
     {
         /// <summary>

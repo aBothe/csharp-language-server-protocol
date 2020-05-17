@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <WarningsAsErrors>true</WarningsAsErrors>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="**\*.json" />
+        <EmbeddedResource Include="**\*.json" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Dap.Protocol\Dap.Protocol.csproj" />
+        <Compile Include="..\JsonRpc.Tests\AutoNSubstitute\*.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="obj\Release\netcoreapp3.1\" />
+    </ItemGroup>
+</Project>

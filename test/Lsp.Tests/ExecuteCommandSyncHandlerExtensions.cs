@@ -2,6 +2,7 @@ using System.Threading;
 using MediatR;
 using NSubstitute;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Server;
 
 namespace Lsp.Tests

@@ -4,7 +4,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(WorkspaceNames.DidChangeConfiguration)]
+    [Method(WorkspaceNames.DidChangeConfiguration, Direction.ClientToServer)]
     public class DidChangeConfigurationParams : IRequest
     {
         /// <summary>

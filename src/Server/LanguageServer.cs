@@ -22,11 +22,14 @@ using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.I
 using System.Reactive.Disposables;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.General;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Server.Configuration;
 using OmniSharp.Extensions.LanguageServer.Server.Logging;
 using OmniSharp.Extensions.LanguageServer.Shared;
@@ -208,6 +211,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             // We need to at least create Window here in case any handler does loggin in their constructor
             TextDocument = new TextDocumentLanguageServer(_responseRouter, _serviceProvider);
             Client = new ClientLanguageServer(_responseRouter, _serviceProvider);
+            General = new GeneralLanguageServer(_responseRouter, _serviceProvider);
             Window = new WindowLanguageServer(_responseRouter, _serviceProvider);
             Workspace = new WorkspaceLanguageServer(_responseRouter, _serviceProvider);
 
@@ -232,8 +236,10 @@ namespace OmniSharp.Extensions.LanguageServer.Server
             }
         }
 
+
         public ITextDocumentLanguageServer TextDocument { get; }
         public IClientLanguageServer Client { get; }
+        public IGeneralLanguageServer General { get; }
         public IWindowLanguageServer Window { get; }
         public IWorkspaceLanguageServer Workspace { get; }
         public IWorkDoneProgressManager ProgressManager => _progressManager;
@@ -259,7 +265,7 @@ namespace OmniSharp.Extensions.LanguageServer.Server
         public IDisposable AddHandler(Func<IServiceProvider, IJsonRpcHandler> handlerFunc)
         {
             var instance = handlerFunc(_serviceProvider);
-            var handlerDisposable = _collection.Add(HandlerTypeHelper.GetMethodName(instance.GetType()), instance);
+            var handlerDisposable = _collection.Add(HandlerTypeDescriptorHelper.GetMethodName(instance.GetType()), instance);
             return RegisterHandlers(handlerDisposable);
         }
 

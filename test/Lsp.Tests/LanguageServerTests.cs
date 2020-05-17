@@ -13,6 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Shared;
 
 namespace Lsp.Tests

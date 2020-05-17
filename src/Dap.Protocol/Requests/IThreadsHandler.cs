@@ -5,7 +5,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Threads)]
+    [Parallel, Method(RequestNames.Threads, Direction.ClientToServer)]
     public interface IThreadsHandler : IJsonRpcRequestHandler<ThreadsArguments, ThreadsResponse>
     {
     }

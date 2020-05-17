@@ -4,7 +4,7 @@
     {
         public static void SendThread(this IDebugClient mediator, ThreadEvent @event)
         {
-            mediator.SendNotification(EventNames.Thread, @event);
+            mediator.SendNotification(@event);
         }
     }
 }

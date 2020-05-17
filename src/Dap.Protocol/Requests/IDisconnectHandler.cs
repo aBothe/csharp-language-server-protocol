@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Disconnect)]
+    [Parallel, Method(RequestNames.Disconnect, Direction.ClientToServer)]
     public interface IDisconnectHandler : IJsonRpcRequestHandler<DisconnectArguments, DisconnectResponse>
     {
     }

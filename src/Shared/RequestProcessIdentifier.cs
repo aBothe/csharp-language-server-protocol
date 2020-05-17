@@ -23,7 +23,7 @@ namespace OmniSharp.Extensions.LanguageServer.Shared
             if (_cache.TryGetValue(descriptor.HandlerType, out var type)) return type;
 
             type = _defaultRequestProcessType;
-            var typeDescriptor = HandlerTypeHelper.GetHandlerTypeDescriptor(descriptor.HandlerType);
+            var typeDescriptor = HandlerTypeDescriptorHelper.GetHandlerTypeDescriptor(descriptor.HandlerType);
             if (typeDescriptor?.RequestProcessType.HasValue == true)
             {
                 type = typeDescriptor.RequestProcessType.Value;

@@ -7,7 +7,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
     /// <summary>
     /// Params for the CodeActionRequest
     /// </summary>
-    [Method(TextDocumentNames.CodeAction)]
+    [Method(TextDocumentNames.CodeAction, Direction.ClientToServer)]
     public class CodeActionParams : ITextDocumentIdentifierParams, IRequest<CommandOrCodeActionContainer>, IWorkDoneProgressParams, IPartialItems<CodeActionOrCommand>
     {
         /// <summary>

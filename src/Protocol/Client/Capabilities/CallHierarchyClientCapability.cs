@@ -1,5 +1,5 @@
 ﻿using System;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document.Server.Proposals;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document.Proposals;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
 

@@ -5,7 +5,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(GeneralNames.Initialize)]
+    [Method(GeneralNames.Initialize, Direction.ClientToServer)]
     public class InitializeParams : IWorkDoneProgressParams, IRequest<InitializeResult>
     {
         /// <summary>

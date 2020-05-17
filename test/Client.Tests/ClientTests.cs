@@ -8,6 +8,7 @@ using MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -72,7 +73,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                 }
             );
 
-            var hover = await client.TextDocument.Hover(new HoverParams() {
+            var hover = await client.TextDocument.RequestHover(new HoverParams() {
                 TextDocument = AbsoluteDocumentPath,
                 Position = (line, column)
             });
@@ -149,7 +150,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                     }, new CompletionRegistrationOptions());
                 });
 
-            var actualCompletions = await client.TextDocument.Completion(new CompletionParams() {
+            var actualCompletions = await client.TextDocument.RequestCompletion(new CompletionParams() {
                 TextDocument = AbsoluteDocumentPath,
                 Position = (line, column),
             }, CancellationToken);
@@ -236,7 +237,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                         }, new SignatureHelpRegistrationOptions());
                 });
 
-            var actualSignatureHelp = await client.TextDocument.SignatureHelp(new SignatureHelpParams() {
+            var actualSignatureHelp = await client.TextDocument.RequestSignatureHelp(new SignatureHelpParams() {
                 TextDocument = AbsoluteDocumentPath,
                 Position = (line, column),
             }, CancellationToken);
@@ -303,7 +304,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                     }, new DefinitionRegistrationOptions());
                 });
 
-            var definitions = await client.TextDocument.Definition(new DefinitionParams() {
+            var definitions = await client.TextDocument.RequestDefinition(new DefinitionParams() {
                 TextDocument = AbsoluteDocumentPath,
                 Position = (line, column),
             }, CancellationToken);
@@ -363,7 +364,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                     }, new DocumentHighlightRegistrationOptions());
                 });
 
-            var definitions = await client.TextDocument.DocumentHighlight(new DocumentHighlightParams() {
+            var definitions = await client.TextDocument.RequestDocumentHighlight(new DocumentHighlightParams() {
                 TextDocument = AbsoluteDocumentPath,
                 Position = (line, column),
             }, CancellationToken);
@@ -428,7 +429,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                     }, new DocumentSymbolRegistrationOptions());
                 });
 
-            var symbols = await client.TextDocument.DocumentSymbol(new DocumentSymbolParams {
+            var symbols = await client.TextDocument.RequestDocumentSymbol(new DocumentSymbolParams {
                 TextDocument = expectedDocumentUri
             }, CancellationToken);
 
@@ -484,7 +485,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client.Tests
                     }, new FoldingRangeRegistrationOptions());
                 });
 
-            var foldingRanges = await client.TextDocument.FoldingRange(new FoldingRangeRequestParam() {
+            var foldingRanges = await client.TextDocument.RequestFoldingRange(new FoldingRangeRequestParam() {
                 TextDocument = AbsoluteDocumentPath
             }, CancellationToken);
 

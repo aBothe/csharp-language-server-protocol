@@ -99,7 +99,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public IDisposable AddHandler<T>(Func<IServiceProvider, T> handlerFunc) where T : IJsonRpcHandler
         {
-            NamedServiceHandlers.Add((HandlerTypeHelper.GetMethodName<T>(), _ => handlerFunc(_)));
+            NamedServiceHandlers.Add((HandlerTypeDescriptorHelper.GetMethodName<T>(), _ => handlerFunc(_)));
             return Disposable.Empty;
         }
 

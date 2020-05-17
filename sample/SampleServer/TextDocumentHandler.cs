@@ -6,9 +6,11 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Server;
 
 namespace SampleServer
@@ -103,7 +105,7 @@ namespace SampleServer
         }
     }
 
-    class MyDocumentSymbolHandler : OmniSharp.Extensions.LanguageServer.Server.DocumentSymbolHandler
+    class MyDocumentSymbolHandler : DocumentSymbolHandler
     {
         public MyDocumentSymbolHandler(IWorkDoneProgressManager progressManager) : base(new DocumentSymbolRegistrationOptions() {
             DocumentSelector = DocumentSelector.ForLanguage("csharp")
@@ -154,7 +156,7 @@ namespace SampleServer
         }
     }
 
-    class MyWorkspaceSymbolsHandler : OmniSharp.Extensions.LanguageServer.Server.WorkspaceSymbolsHandler
+    class MyWorkspaceSymbolsHandler : WorkspaceSymbolsHandler
     {
         private readonly ILogger<MyWorkspaceSymbolsHandler> logger;
 

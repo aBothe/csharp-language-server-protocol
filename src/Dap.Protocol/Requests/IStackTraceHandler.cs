@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.StackTrace)]
+    [Parallel, Method(RequestNames.StackTrace, Direction.ClientToServer)]
     public interface IStackTraceHandler : IJsonRpcRequestHandler<StackTraceArguments, StackTraceResponse>
     {
     }

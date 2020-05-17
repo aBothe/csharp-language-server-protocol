@@ -3,7 +3,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.DidOpen)]
+    [Method(TextDocumentNames.DidOpen, Direction.ClientToServer)]
     public class DidOpenTextDocumentParams : IRequest
     {
         /// <summary>

@@ -4,7 +4,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
 {
-    [Method(TextDocumentNames.Rename)]
+    [Method(TextDocumentNames.Rename, Direction.ClientToServer)]
     public class RenameParams : ITextDocumentIdentifierParams, IRequest<WorkspaceEdit>, IWorkDoneProgressParams
     {
         /// <summary>

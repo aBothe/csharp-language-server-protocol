@@ -8,6 +8,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using DynamicData;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 
 namespace OmniSharp.Extensions.LanguageServer.Client
 {

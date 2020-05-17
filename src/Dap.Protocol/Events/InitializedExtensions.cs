@@ -4,7 +4,7 @@
     {
         public static void SendInitialized(this IDebugClient mediator, InitializedEvent @event)
         {
-            mediator.SendNotification(EventNames.Initialized, @event);
+            mediator.SendNotification(@event);
         }
     }
 }

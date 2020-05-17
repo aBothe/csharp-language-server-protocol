@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.Goto)]
+    [Parallel, Method(RequestNames.Goto, Direction.ClientToServer)]
     public interface IGotoHandler : IJsonRpcRequestHandler<GotoArguments, GotoResponse>
     {
     }

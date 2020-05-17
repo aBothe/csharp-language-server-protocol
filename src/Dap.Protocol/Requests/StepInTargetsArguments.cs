@@ -1,7 +1,9 @@
 using MediatR;
+using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
+    [Method(RequestNames.StepInTargets)]
     public class StepInTargetsArguments : IRequest<StepInTargetsResponse>
     {
         /// <summary>

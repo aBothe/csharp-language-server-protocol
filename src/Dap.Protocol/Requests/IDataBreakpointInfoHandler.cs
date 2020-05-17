@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace OmniSharp.Extensions.DebugAdapter.Protocol.Requests
 {
-    [Parallel, Method(RequestNames.DataBreakpointInfo)]
+    [Parallel, Method(RequestNames.DataBreakpointInfo, Direction.ClientToServer)]
     public interface
         IDataBreakpointInfoHandler : IJsonRpcRequestHandler<DataBreakpointInfoArguments, DataBreakpointInfoResponse>
     {

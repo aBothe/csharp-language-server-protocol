@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -10,7 +11,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace OmniSharp.Extensions.LanguageServer.Protocol
 {
-    [Parallel, Method(GeneralNames.Progress)]
+    [Parallel, Method(GeneralNames.Progress, Direction.Bidirectional)]
     public interface IProgressHandler : IJsonRpcNotificationHandler<ProgressParams>
     {
     }
@@ -76,6 +77,16 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol
             Func<ProgressParams, Task> handler)
         {
             return registry.AddHandler(GeneralNames.Progress, NotificationHandler.For(handler));
+        }
+
+        public static void SendProgress(this IGeneralLanguageClient registry, ProgressParams @params, CancellationToken cancellationToken = default)
+        {
+            registry.SendNotification(@params);
+        }
+
+        public static void SendProgress(this IGeneralLanguageServer registry, ProgressParams @params, CancellationToken cancellationToken = default)
+        {
+            registry.SendNotification(@params);
         }
     }
 }

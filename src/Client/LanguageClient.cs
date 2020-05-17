@@ -17,6 +17,8 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.General;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 using OmniSharp.Extensions.LanguageServer.Shared;
 using ISerializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.ISerializer;
 
@@ -214,6 +216,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             // We need to at least create Window here in case any handler does loggin in their constructor
             TextDocument = new TextDocumentLanguageClient(_responseRouter, _serviceProvider);
             Client = new ClientLanguageClient(_responseRouter, _serviceProvider);
+            General = new GeneralLanguageClient(_responseRouter, _serviceProvider);
             Window = new WindowLanguageClient(_responseRouter, _serviceProvider);
             Workspace = new WorkspaceLanguageClient(_responseRouter, _serviceProvider);
 
@@ -237,6 +240,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
         public ITextDocumentLanguageClient TextDocument { get; }
         public IClientLanguageClient Client { get; }
+        public IGeneralLanguageClient General { get; }
         public IWindowLanguageClient Window { get; }
         public IWorkspaceLanguageClient Workspace { get; }
         public IProgressManager ProgressManager => _progressManager;
@@ -289,7 +293,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
 
             // TODO: pull supported fields and add any static registrations to the registration manager
             _receiver.Initialized();
-            this.RequestInitialized(new InitializedParams());
+            this.SendInitialized(new InitializedParams());
         }
 
         private void RegisterCapabilities(ClientCapabilities capabilities)
@@ -356,7 +360,7 @@ namespace OmniSharp.Extensions.LanguageServer.Client
             if (_connection.IsOpen)
             {
                 await this.RequestShutdown();
-                this.RequestExit();
+                this.SendExit();
             }
 
             this._connection.Dispose();
