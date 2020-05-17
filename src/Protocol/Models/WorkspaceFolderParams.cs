@@ -6,7 +6,7 @@ namespace OmniSharp.Extensions.LanguageServer.Protocol.Models
     [Method(WorkspaceNames.WorkspaceFolders, Direction.ServerToClient)]
     public class WorkspaceFolderParams : IRequest<Container<WorkspaceFolder>>
     {
-        private WorkspaceFolderParams()
+        public WorkspaceFolderParams()
         {
 
         }

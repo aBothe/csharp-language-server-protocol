@@ -140,7 +140,7 @@ namespace OmniSharp.Extensions.JsonRpc
                             return new InvalidParams(request.Id);
                         }
 
-                        var result = HandleRequest(mediator, descriptor, @params ?? EmptyRequest.Instance, cts.Token);
+                        var result = HandleRequest(mediator, descriptor, @params ?? Activator.CreateInstance(descriptor.Params), cts.Token);
                         await result;
 
                         object responseValue = null;
